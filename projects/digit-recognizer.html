@@ -5,6 +5,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Neural Network from Scratch — Aaron Morris Jara</title>
 	<meta name="description" content="Case study: a neural network written from scratch in JavaScript, trained on MNIST to 98.86% accuracy, running live in the browser." />
+	<!-- social -->
+	<link rel="canonical" href="https://aaron367123.github.io/projects/digit-recognizer.html" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Aaron Morris Jara" />
+	<meta property="og:title" content="Neural Network from Scratch — Aaron Morris Jara" />
+	<meta property="og:description" content="Case study: a neural network written from scratch in JavaScript, trained on MNIST to 98.86% accuracy, running live in the browser." />
+	<meta property="og:url" content="https://aaron367123.github.io/projects/digit-recognizer.html" />
+	<meta property="og:image" content="https://aaron367123.github.io/assets/img/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<!-- /social -->
 	<meta name="theme-color" content="#07110c" />
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,6 +45,7 @@
 				<a href="../index.html#skills">Skills</a>
 				<a href="../index.html#projects" class="is-active">Projects</a>
 				<a href="../index.html#contact">Contact</a>
+				<a href="../resume.html" class="nav__resume">Resume</a>
 			</nav>
 			<div class="nav__actions">
 				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
@@ -61,6 +74,12 @@
 					<div><dt>Model</dt><dd>784-256-128-10 MLP, 235,146 parameters</dd></div>
 					<div><dt>Result</dt><dd>98.86% test accuracy, 232 KB int8 model</dd></div>
 					<div><dt>Quality</dt><dd>43 tests incl. gradient checks, 0 dependencies</dd></div>
+				</dl>
+				<dl class="glance reveal" aria-label="At a glance">
+					<div class="glance__cell"><dt><i class="fas fa-crosshairs" aria-hidden="true"></i> Problem</dt><dd>ML libraries hide the maths. I wanted to build and understand every step myself.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-user" aria-hidden="true"></i> My role</dt><dd>Solo.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-tools" aria-hidden="true"></i> What I built</dt><dd>Matrix ops, backpropagation, AdamW, data augmentation, int8 quantisation and MNIST-style preprocessing for drawings, in plain JavaScript.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-chart-line" aria-hidden="true"></i> Result</dt><dd>98.86% test accuracy, a 232 KB model and 0.11 ms per prediction. 43 tests including gradient checks.</dd></div>
 				</dl>
 			</div>
 		</section>

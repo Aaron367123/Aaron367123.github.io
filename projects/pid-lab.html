@@ -5,6 +5,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PID Control Lab — Aaron Morris Jara</title>
 	<meta name="description" content="Case study: an interactive PID control lab with five simulated plants, relay autotuning, and an embedded C PID library verified against the JavaScript model." />
+	<!-- social -->
+	<link rel="canonical" href="https://aaron367123.github.io/projects/pid-lab.html" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Aaron Morris Jara" />
+	<meta property="og:title" content="PID Control Lab — Aaron Morris Jara" />
+	<meta property="og:description" content="Case study: an interactive PID control lab with five simulated plants, relay autotuning, and an embedded C PID library verified against the JavaScript model." />
+	<meta property="og:url" content="https://aaron367123.github.io/projects/pid-lab.html" />
+	<meta property="og:image" content="https://aaron367123.github.io/assets/img/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<!-- /social -->
 	<meta name="theme-color" content="#07110c" />
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,6 +45,7 @@
 				<a href="../index.html#skills">Skills</a>
 				<a href="../index.html#projects" class="is-active">Projects</a>
 				<a href="../index.html#contact">Contact</a>
+				<a href="../resume.html" class="nav__resume">Resume</a>
 			</nav>
 			<div class="nav__actions">
 				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
@@ -61,6 +74,12 @@
 					<div><dt>Simulation</dt><dd>JavaScript, RK4 integration, no dependencies</dd></div>
 					<div><dt>Firmware</dt><dd>C99 library, no malloc, Arduino &amp; Pico examples</dd></div>
 					<div><dt>Quality</dt><dd>35 JS tests · 4,028 C checks · 0 warnings</dd></div>
+				</dl>
+				<dl class="glance reveal" aria-label="At a glance">
+					<div class="glance__cell"><dt><i class="fas fa-crosshairs" aria-hidden="true"></i> Problem</dt><dd>Textbook PID breaks on real hardware. I wanted to see why and fix it properly.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-user" aria-hidden="true"></i> My role</dt><dd>Solo.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-tools" aria-hidden="true"></i> What I built</dt><dd>PID with anti-windup and a filtered derivative, five RK4-simulated physical systems, relay autotuning, and a C99 library for microcontrollers.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-chart-line" aria-hidden="true"></i> Result</dt><dd>C matches the JavaScript model within 0.00005. Autotune finds the critical gain within 2% (the textbook formula was 20% off). 35 JS tests and 4,028 C checks.</dd></div>
 				</dl>
 			</div>
 		</section>

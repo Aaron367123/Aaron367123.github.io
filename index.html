@@ -4,7 +4,19 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Aaron Morris Jara — Software Developer</title>
-	<meta name="description" content="Portfolio of Aaron Morris Jara — graduate developer working in C, Python, Java, JavaScript, SQL, HTML and CSS." />
+	<meta name="description" content="Aaron Morris Jara: Toronto-area software developer (systems/backend, full-stack, ML/data). 13 projects with case studies and 6 live demos: an HTTP server in C, a compiler and CPU emulator, a neural network from scratch, and more." />
+	<!-- social -->
+	<link rel="canonical" href="https://aaron367123.github.io/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Aaron Morris Jara" />
+	<meta property="og:title" content="Aaron Morris Jara — Software Developer" />
+	<meta property="og:description" content="Toronto-area software developer (systems/backend, full-stack, ML/data). 13 projects, 6 live demos, 582 tests." />
+	<meta property="og:url" content="https://aaron367123.github.io/" />
+	<meta property="og:image" content="https://aaron367123.github.io/assets/img/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<!-- /social -->
 	<meta name="theme-color" content="#07110c" />
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,6 +47,7 @@
 				<a href="#skills">Skills</a>
 				<a href="#projects">Projects</a>
 				<a href="#contact">Contact</a>
+				<a href="resume.html" class="nav__resume">Resume</a>
 			</nav>
 			<div class="nav__actions">
 				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">
@@ -67,8 +80,8 @@
 			</div>
 			<div class="container hero__grid">
 				<div class="hero__inner">
-					<p class="eyebrow reveal"><span class="led" aria-hidden="true"></span> PWR ON · Open to new opportunities</p>
-					<p class="silk reveal">U1 · Computer Engineering Technologist</p>
+					<p class="eyebrow reveal"><span class="led" aria-hidden="true"></span> Open to work · Toronto area · remote / on-site / hybrid</p>
+					<p class="silk reveal">U1 · Software developer · Computer Engineering Technology grad</p>
 					<h1 class="hero__title reveal">
 						Hi, I'm <span class="gradient-text">Aaron Morris Jara</span>.
 					</h1>
@@ -76,10 +89,12 @@
 						I build <span class="typed" id="typed" aria-live="polite">IoT devices</span><span class="caret" aria-hidden="true"></span>
 					</p>
 					<p class="hero__lead reveal">
-						I like the whole stack, from the circuit board up: sensors on a Raspberry Pi, a CPU emulator, an HTTP server written from scratch in C, neural networks and real-time dashboards.
+						I'm looking for <strong>systems/backend</strong>, <strong>full-stack</strong> and <strong>ML/data</strong> roles. I build from the circuit board up: an HTTP server in C, a compiler and CPU emulator, a neural network from scratch, and real-time IoT dashboards, each with tests and a live demo.
 					</p>
+					<p class="hero__now reveal"><span class="hero__now-label">Currently</span> Data Migration Specialist at Boomerangfx</p>
 					<div class="hero__cta reveal">
 						<a href="#projects" class="btn btn--primary">View my work <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+						<a href="resume.html" class="btn btn--ghost"><i class="fas fa-file-alt" aria-hidden="true"></i> Resume</a>
 						<a href="#contact" class="btn btn--ghost">Get in touch</a>
 					</div>
 					<ul class="socials reveal" aria-label="Social links">
@@ -336,7 +351,6 @@
 						<button type="button" class="dip__switch" data-filter="hw" aria-pressed="false"><span class="dip__lever"></span>Hardware</button>
 						<button type="button" class="dip__switch" data-filter="sys" aria-pressed="false"><span class="dip__lever"></span>Systems</button>
 						<button type="button" class="dip__switch" data-filter="web" aria-pressed="false"><span class="dip__lever"></span>Web</button>
-						<button type="button" class="dip__switch" data-filter="ml" aria-pressed="false"><span class="dip__lever"></span>ML &amp; data</button>
 					</div>
 				</div>
 
@@ -381,16 +395,6 @@
 						</div>
 						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
 					</a>
-					<a class="card ic reveal" data-ref="U10 · YOLO-PK" data-cat="ml" href="projects/yolo-parking.html">
-						<div class="card__media"><img src="images/projects/yolo/test-1.jpg" alt="Parking lot with detected spaces" loading="lazy" width="640" height="640" /></div>
-						<div class="card__body">
-							<h3>Parking Detection with YOLOv8</h3>
-							<p>An object detector that marks free and occupied spaces in aerial photos: 89.4% mAP@50 and 91% precision.</p>
-							<ul class="tags"><li>Python</li><li>YOLOv8</li><li>PyTorch</li></ul>
-							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
 					<a class="card ic reveal" data-ref="U11 · PET-MON" data-cat="hw" href="projects/pet-monitor.html">
 						<div class="card__media"><img src="images/projects/pet-monitor/prototype.jpg" alt="Smart Pet Monitor hardware prototype" loading="lazy" width="1600" height="1475" /></div>
 						<div class="card__body">
@@ -401,36 +405,15 @@
 						</div>
 						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
 					</a>
-					<a class="card ic reveal" data-ref="U12 · CMD-SRV" data-cat="sys" href="projects/cmd-server.html">
-						<div class="card__media" style="background:#fff"><img src="images/projects/cmd-server/multithreaded-3-clients.jpg" alt="Three telnet clients on separate server threads" loading="lazy" width="1013" height="359" style="object-fit:contain" /></div>
-						<div class="card__body">
-							<h3>Multithreaded TCP Command Server</h3>
-							<p>A Java telnet command server with a thread pool, deployed as a systemd service on Linux.</p>
-							<ul class="tags"><li>Java</li><li>Sockets</li><li>systemd</li></ul>
-							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U13 · NBA-DATA" data-cat="ml" href="projects/nba-data.html">
-						<div class="card__media" style="background:#fff"><img src="images/projects/nba/dashboard.jpg" alt="Metabase dashboard of NBA rookie statistics" loading="lazy" width="1062" height="622" style="object-position:top" /></div>
-						<div class="card__body">
-							<h3>NBA Rookie Data Analysis</h3>
-							<p>35 draft classes of rookie stats analysed with SQL in Metabase, showing the rise of the three-point shot.</p>
-							<ul class="tags"><li>SQL</li><li>Metabase</li></ul>
-							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U14 · SORT" data-cat="sys" href="projects/sorting-algorithms.html">
-						<div class="card__media"><img src="images/web/java.jpg" alt="Java code on a screen" loading="lazy" width="1200" height="800" /></div>
-						<div class="card__body">
-							<h3>Sorting Algorithms</h3>
-							<p>Four sorting algorithms in Java, timed against each other, with an interactive visualizer and a live benchmark.</p>
-							<ul class="tags"><li>Java</li><li>Algorithms</li></ul>
-							<span class="card__more">Try the visualizer <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
+				</div>
+				<div class="earlier reveal">
+					<p class="earlier__title"><span class="kicker-ref">J5</span> Earlier work &amp; coursework</p>
+					<ul class="earlier__list">
+						<li><a href="projects/yolo-parking.html"><span class="earlier__name">Parking Detection with YOLOv8</span><span class="earlier__desc">Object detection on aerial lot photos · 89.4% mAP@50</span><span class="earlier__tags">Python · YOLOv8</span></a></li>
+						<li><a href="projects/cmd-server.html"><span class="earlier__name">Multithreaded TCP Command Server</span><span class="earlier__desc">Telnet command server with a thread pool, run as a systemd service</span><span class="earlier__tags">Java · Linux</span></a></li>
+						<li><a href="projects/nba-data.html"><span class="earlier__name">NBA Rookie Data Analysis</span><span class="earlier__desc">35 draft classes analysed with SQL in Metabase</span><span class="earlier__tags">SQL · Metabase</span></a></li>
+						<li><a href="projects/sorting-algorithms.html"><span class="earlier__name">Sorting Algorithms</span><span class="earlier__desc">Four sorts timed in Java, plus a live visualizer</span><span class="earlier__tags">Java · Algorithms</span></a></li>
+					</ul>
 				</div>
 			</div>
 		</section>

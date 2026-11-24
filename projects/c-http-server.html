@@ -5,6 +5,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>HTTP Server in C — Aaron Morris Jara</title>
 	<meta name="description" content="Case study: tinyhttpd, a multithreaded HTTP/1.1 server written from scratch in C, with a bounded work queue, keep-alive, path-traversal defences and a custom load tester." />
+	<!-- social -->
+	<link rel="canonical" href="https://aaron367123.github.io/projects/c-http-server.html" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Aaron Morris Jara" />
+	<meta property="og:title" content="HTTP Server in C — Aaron Morris Jara" />
+	<meta property="og:description" content="Case study: tinyhttpd, a multithreaded HTTP/1.1 server written from scratch in C, with a bounded work queue, keep-alive, path-traversal defences and a custom load tester." />
+	<meta property="og:url" content="https://aaron367123.github.io/projects/c-http-server.html" />
+	<meta property="og:image" content="https://aaron367123.github.io/assets/img/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<!-- /social -->
 	<meta name="theme-color" content="#07110c" />
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,6 +45,7 @@
 				<a href="../index.html#skills">Skills</a>
 				<a href="../index.html#projects" class="is-active">Projects</a>
 				<a href="../index.html#contact">Contact</a>
+				<a href="../resume.html" class="nav__resume">Resume</a>
 			</nav>
 			<div class="nav__actions">
 				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
@@ -62,6 +75,12 @@
 					<div><dt>Language</dt><dd>C11, pthreads, sockets (~2,900 lines)</dd></div>
 					<div><dt>Quality</dt><dd>0 warnings at <code>-Wall -Wextra -Wpedantic</code>, cppcheck clean</dd></div>
 					<div><dt>Tests</dt><dd>163 unit checks + 21 integration tests</dd></div>
+				</dl>
+				<dl class="glance reveal" aria-label="At a glance">
+					<div class="glance__cell"><dt><i class="fas fa-crosshairs" aria-hidden="true"></i> Problem</dt><dd>I wanted to learn what sits underneath every web server: sockets, concurrency and HTTP parsing.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-user" aria-hidden="true"></i> My role</dt><dd>Solo.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-tools" aria-hidden="true"></i> What I built</dt><dd>A multithreaded HTTP/1.1 server in C with a bounded work queue, keep-alive and path-traversal defences, plus a load tester written in C.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-chart-line" aria-hidden="true"></i> Result</dt><dd>About 9,900 requests/s, with 0 errors across about a million requests. 184 tests and 0 compiler warnings.</dd></div>
 				</dl>
 				<figure class="cs-cover reveal" style="background:#0b0f1a">
 					<img src="../images/projects/c-http-server/bench-chart.jpg" alt="Chart of requests per second against worker threads, with and without keep-alive, for 1 KiB and 100 KiB files" width="1440" height="780" style="object-fit:contain" />

@@ -94,7 +94,7 @@
 				function step(ts) {
 					if (!start) start = ts;
 					var p = Math.min((ts - start) / 1200, 1);
-					el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+					el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))).toLocaleString('en-US');
 					if (p < 1) requestAnimationFrame(step);
 				}
 				el.textContent = '0';

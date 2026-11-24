@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Tabletop Campaign Workspace — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a real-time tabletop campaign workspace in vanilla JavaScript with Firebase sync, three-way merging, a rules engine, and an open-content data pipeline with a licence check." />
+	<!-- social -->
+	<link rel="canonical" href="https://aaron367123.github.io/projects/tabletop-workspace.html" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Aaron Morris Jara" />
+	<meta property="og:title" content="Tabletop Campaign Workspace — Aaron Morris Jara" />
+	<meta property="og:description" content="Case study: a real-time tabletop campaign workspace in vanilla JavaScript with Firebase sync, three-way merging, a rules engine, and an open-content data pipeline with a licence check." />
+	<meta property="og:url" content="https://aaron367123.github.io/projects/tabletop-workspace.html" />
+	<meta property="og:image" content="https://aaron367123.github.io/assets/img/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<!-- /social -->
+	<meta name="theme-color" content="#07110c" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<link rel="stylesheet" href="../assets/css/board.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+				<a href="../resume.html" class="nav__resume">Resume</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal"><span class="kicker-ref">U12</span> Real-time web app / Data pipeline</p>
+				<h1 class="cs-hero__title reveal">Tabletop Campaign Workspace</h1>
+				<p class="cs-hero__summary reveal">A real-time workspace for running tabletop role-playing sessions. The game master's screen and every player's phone stay in sync. It has a battle map with fog of war and line of sight, initiative tracking, character sheets computed by a rules engine, a shared dice log and session notes. It's about 66,000 lines of plain JavaScript with no framework and no build step, checked by 4,735 automated checks. For this public edition I also built a data pipeline that keeps only openly licensed rules content, and a licence check that fails the build if anything else gets through.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://aaron367123.github.io/tabletop-workspace/" target="_blank" rel="noopener"><i class="fas fa-bolt" aria-hidden="true"></i> Open the live demo</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/tabletop-workspace" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project, used at a real table</dd></div>
+					<div><dt>Stack</dt><dd>Vanilla JS, HTML/CSS, Firebase Realtime Database, service worker</dd></div>
+					<div><dt>Size</dt><dd>~66,000 lines of JS, 22 panels</dd></div>
+					<div><dt>Quality</dt><dd>4,735 self-test checks in 4 view modes, 11 demo checks, licence check in CI</dd></div>
+				</dl>
+				<dl class="glance reveal" aria-label="At a glance">
+					<div class="glance__cell"><dt><i class="fas fa-crosshairs" aria-hidden="true"></i> Problem</dt><dd>Running a tabletop campaign means juggling rules, sheets, initiative, a map and dice across the game master's laptop and every player's phone.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-user" aria-hidden="true"></i> My role</dt><dd>Solo. Built for, and used at, a real table.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-tools" aria-hidden="true"></i> What I built</dt><dd>A real-time workspace: Firebase sync with per-entity nodes and three-way merging, a battle map, a rules engine for two editions, phone views, and an open-content data pipeline with a licence check.</dd></div>
+					<div class="glance__cell"><dt><i class="fas fa-chart-line" aria-hidden="true"></i> Result</dt><dd>About 66,000 lines of vanilla JS and 4,735 automated checks. The public demo ships only SRD content (4,049 entries) and never touches a server.</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: a fight in progress</h2>
+					<p>The demo opens on a sample table: four level-3 characters made in the app's own character builder, fighting goblins and a bugbear on a sample map in round 2. Open a character's <strong>Sheet</strong>, roll from the <strong>Game Log</strong>, or drag tokens on the map. It runs entirely in your browser, never connects to a server, and resets when you reload.</p>
+				</div>
+				<a class="btn btn--ghost" href="https://aaron367123.github.io/tabletop-workspace/" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<div class="gallery">
+				<figure class="gallery--wide">
+					<button type="button" class="contain"><img src="../images/projects/tabletop-workspace/battle-map.jpg" alt="Combat tracker, battle map with character and monster tokens, and the game log" loading="lazy" /></button>
+					<figcaption>The demo table: the combat tracker, the battle map and the shared game log, each a draggable window.</figcaption>
+				</figure>
+			</div>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#sync">Sync without clobbering</a></li>
+					<li><a href="#presence">Do all screens agree?</a></li>
+					<li><a href="#rules">Rules engine</a></li>
+					<li><a href="#open">Open content pipeline</a></li>
+					<li><a href="#demo-mode">A demo that can't break anything</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Running a tabletop campaign means juggling a lot at once: rules, character sheets, initiative order, hit points, a map and dice, spread across the game master's laptop and every player's phone. This app puts all of it in one place and keeps every device up to date live. When the game master damages a goblin, every player sees it straight away. When a player heals, the game master's tracker updates.</p>
+					<div class="feature-grid">
+						<div class="feature-tile"><i class="fas fa-map"></i><h4>Battle map</h4><p>Tokens sized by creature, fog of war, line of sight that respects walls, rulers and areas of effect. It can find the grid and the walls in an uploaded map picture.</p></div>
+						<div class="feature-tile"><i class="fas fa-user-shield"></i><h4>Characters</h4><p>A step-by-step builder and a full sheet for both the 2014 and 2024 rules. Click any score, save or attack to roll it.</p></div>
+						<div class="feature-tile"><i class="fas fa-mobile-alt"></i><h4>Player phones</h4><p>Each player gets a phone view with their sheet, the map, the party and notes, and can act on their turn.</p></div>
+						<div class="feature-tile"><i class="fas fa-th-large"></i><h4>Workspace</h4><p>22 panels as draggable, resizable windows with saved layouts and a command palette. It works offline through a service worker.</p></div>
+					</div>
+				</section>
+
+				<section id="sync" class="reveal">
+					<h2><span class="num">02</span> Sync without clobbering</h2>
+					<p>Every panel saves its state to <code>localStorage</code>, in hundreds of places. Rather than rewrite them all to talk to a server, the sync layer wraps <code>setItem</code>: a write that actually changes a synced key marks it dirty, and dirty keys are pushed to Firebase in one batch 300&nbsp;ms later.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>js/sync/realtime.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>Storage.prototype.setItem = function(key, value) {
+  // No-op writes (byte-identical value) neither store nor mark dirty.
+  if (TCW_SYNC_KEYS.includes(key) &amp;&amp; this.getItem(key) === String(value)) return;
+  _orig.call(this, key, value);
+  if (!_remoteUpdate &amp;&amp; TCW_SYNC_KEYS.includes(key) &amp;&amp; _fbDb) {
+    _dirtyKeys.add(key);
+    clearTimeout(_pushTimer);
+    _pushTimer = setTimeout(_flushDirtyKeys, 300);
+  }
+};</code></pre>
+					</div>
+					<p>The hard part is two people editing at once. If the whole combat state were saved as one value, the last write would win and wipe out the other change. So combat and the battle map are split into <strong>one database node per creature or token</strong>: an HP change sends about 200 bytes, and edits to different creatures never collide.</p>
+					<p>When two devices do change the same record, it goes through a <strong>three-way merge</strong> against the last version both had seen. Each field is decided separately, and counters like hit points take <em>both</em> changes instead of picking a winner:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>js/sync/realtime.js · _merge3</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>if (baseKnown){
+  if (_eq(base, mine))   return theirs;   // we didn't touch it
+  if (_eq(base, theirs)) return mine;     // they didn't touch it
+}
+// ...
+// A counter both sides moved (HP, temp HP): apply BOTH changes.
+// 30 HP, the DM hits for 10 while the player heals 5: the result is 25.
+if (opts &amp;&amp; opts.delta &amp;&amp; opts.delta.has(k) &amp;&amp; inB /* ...all numbers, both changed */){
+  let v = theirs[k] + (mine[k] - b[k]);
+  if (k === 'hp' &amp;&amp; typeof mine.hpMax === 'number'){
+    v = Math.min(v, Math.max(mine.hpMax, mine[k], theirs[k]));
+  }
+  out[k] = Math.max(0, v);
+  return;
+}</code></pre>
+					</div>
+					<p class="code__note">Trimmed. The full merge also handles lists keyed by id (so a reorder on one side doesn't scramble the other), and grouped fields such as a token's x and y, which must come from the same side.</p>
+					<p>One subtle bug shaped the tie-break. When both sides changed the same field, "my change wins" sounds fair, but each device keeps its own value and re-sends it, forever. Preferring the remote value is the one answer both sides compute identically, so they agree after a single exchange.</p>
+				</section>
+
+				<section id="presence" class="reveal">
+					<h2><span class="num">03</span> Do all screens agree?</h2>
+					<p>Each device sends a heartbeat with a <strong>signature of what it is showing</strong>: which creatures, at what HP, on which squares. If a device disagrees with the others for more than a short grace period, it is marked as behind and gets a <strong>Resync</strong> button.</p>
+					<p>My first idea was to hash the stored JSON, but that falsely reported disagreement. Two devices holding the same data can store it in a different key order, because Firebase returns child nodes in its own order. Hashing what is actually on screen measures the thing that matters and nothing else.</p>
+				</section>
+
+				<section id="rules" class="reveal">
+					<h2><span class="num">04</span> Rules engine</h2>
+					<p>The character builder stores only the <em>choices</em> a player makes: species, class, level, ability scores, skills, spells and feats. The rules engine turns those choices into the whole sheet: saves, skills, HP, armour class, attacks, spell slots and limited-use resources.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>js/features/char-rules.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// The sheet is a pure function of the build.
+// That is what makes levelling up, changing an earlier choice and switching
+// rules edition safe: nothing is accumulated, everything is recomputed.</code></pre>
+					</div>
+					<p>Because nothing is stored incrementally, levelling down, changing a choice made at level 1, or switching between the 2014 and 2024 rules can't leave stale numbers behind. Features whose effects are only described in prose are handled by small named effect hooks.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/tabletop-workspace/character-sheet.jpg" alt="A wizard's character sheet with abilities, saves, skills and attacks" loading="lazy" /></button>
+							<figcaption>A level-3 wizard's sheet. Every number on it is recomputed from the build.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="open" class="reveal">
+					<h2><span class="num">05</span> Open content pipeline</h2>
+					<p>The private version of this app read a large community dataset that includes the full text of published, copyrighted books. To make it public, I had to keep only content released under an open licence: the System Reference Documents (SRD 5.1 and 5.2, CC BY 4.0). This turned into a data migration problem: filter thousands of records across dozens of categories, rewrite the references between them, and prove that nothing protected got through.</p>
+					<p>A build script keeps only entries marked as SRD, strips lore text, artwork and book references, relabels sources as <code>SRD 5.1</code>/<code>SRD 5.2</code>, and renames 67 entries to their SRD names. There was one catch: the dataset's <em>text</em> comes from the books, not the SRD. So a known list of fixes restores the SRD wording, and any entry that still mentions a protected name is dropped and logged:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>tools/build-srd-data.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>return flattenCopies(cat, list, RAW[cat]).map(e =&gt; {
+  fixReprints(cat, e);
+  const c = clean(e, null);   // strip art, lore, book refs; apply SRD wording fixes
+  delete c._meta;
+  return c;
+}).filter(c =&gt; {
+  const m = PRODUCT_IDENTITY.exec(JSON.stringify(c));
+  if (!m) return true;
+  DROPPED_PI.push(cat + ': ' + c.name + ' (' + c.source + ') — "' + m[0] + '"');
+  if (stats[cat]) stats[cat].after--;
+  return false;
+});</code></pre>
+					</div>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Category</th><th>Before</th><th>After (SRD only)</th></tr></thead>
+							<tbody>
+								<tr><td>Monsters</td><td>4,574</td><td>659</td></tr>
+								<tr><td>Spells</td><td>969</td><td>657</td></tr>
+								<tr><td>Items</td><td>2,512</td><td>943</td></tr>
+								<tr><td>Subclasses</td><td>330</td><td>24</td></tr>
+								<tr><td>Adventures / books</td><td>102 / 67</td><td>0 / 0</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>A separate <strong>licence check</strong> re-validates the output from scratch, like a reconciliation step after a migration. It checks every data entry's source, scans every text file for lore, art links and protected names, and fails the build if anything is wrong. It runs in CI on every push. While reviewing the output I found that it missed plurals ("mind flayers" got past a pattern for "mind flayer"). I fixed the pattern and added the wording fixes, and the rerun dropped the entries that had slipped through.</p>
+				</section>
+
+				<section id="demo-mode" class="reveal">
+					<h2><span class="num">06</span> A demo that can't break anything</h2>
+					<p>The public demo is served from the same site as the private app, so the two share browser storage. Instead of teaching every panel about a demo mode, the demo swaps <code>localStorage</code> itself for a view that reads and writes under its own prefix. The app sees the same API and keys, and a real campaign's data is invisible to it and never written.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>js/core/demo.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>const NS = 'tcw-demo:';
+const api = {
+  getItem: k =&gt; real.getItem(NS + k),
+  setItem: (k, v) =&gt; real.setItem(NS + k, String(v)),
+  removeItem: k =&gt; real.removeItem(NS + k),
+  clear: () =&gt; keys().forEach(k =&gt; real.removeItem(NS + k)),
+  // ...key(i) and length over the namespaced keys only
+};</code></pre>
+					</div>
+					<p>The same switch turns off Firebase and Dropbox, so their SDKs are never even downloaded. An automated check plants a fake real campaign in the browser and loads the demo. It then confirms the campaign is untouched, that the demo wrote only under its prefix, and that none of 124 network requests went to Firebase, Dropbox or an image host.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/tabletop-workspace/combat-party.jpg" alt="Combat tracker, party tracker and turn view" loading="lazy" /></button>
+							<figcaption>The party tracker and Turn View: whose turn it is, their reactions and a live mini-map.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/tabletop-workspace/player-phone.jpg" alt="A player's phone view showing their character sheet" loading="lazy" /></button>
+							<figcaption>A player's phone: their sheet, the turn order, and tabs for the map, party and notes.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">07</span> Testing</h2>
+					<p>The self-test suite drives the real app in a headless browser and runs <strong>4,735 checks</strong> in four modes: game master (3,629), player (487), mobile (80) and phone (539). Many are regression tests for bugs I hit, such as two devices moving the same token at once and ending up with one device's position and the other's movement count, or an uploaded map turning into an image URL that didn't exist.</p>
+					<ul class="cs-list">
+						<li><code>npm test</code>: the full self-test suite in all four modes.</li>
+						<li><code>npm run test:demo</code>: 11 checks that the demo is isolated and never syncs.</li>
+						<li><code>npm run check:licence</code>: 4,049 data entries and 144 text files, all open content.</li>
+						<li>A build stamp content-hashes every asset so the service worker always serves a matching set of files after an update.</li>
+					</ul>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">08</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Real-time sync is mostly about conflicts. Splitting data into small pieces and merging field by field made "two people editing at once" a normal case instead of a data-loss bug.</li>
+						<li>A merge rule has to converge, not just look fair. "My change wins" on both sides means the two devices argue forever.</li>
+						<li>Making a project public is its own data migration: filter, transform, then independently validate the result, and expect the validation to catch something.</li>
+						<li>Limitations: edits to the same field on two devices still go to one side, and the 2014 rules are thin in the open edition because the SRD includes one subclass per class.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="c-http-server.html"><small>← Previous</small><strong>tinyhttpd: HTTP Server in C</strong></a>
+			<a href="logic-sim.html"><small>Next →</small><strong>Digital Logic Simulator</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

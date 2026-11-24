@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>PID Control Lab — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: an interactive PID control lab with five simulated plants, relay autotuning, and an embedded C PID library verified against the JavaScript model." />
+	<meta name="theme-color" content="#07110c" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<link rel="stylesheet" href="../assets/css/board.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal"><span class="kicker-ref">U7</span> Control systems / Embedded C</p>
+				<h1 class="cs-hero__title reveal">PID Control Lab</h1>
+				<p class="cs-hero__summary reveal">A browser lab where you tune a PID controller against five simulated physical systems: a DC motor's speed and position, a quadcopter's altitude, a heater with a time delay, and a ball balancing on a beam. It includes relay autotuning and live performance metrics. Alongside it is an embedded-ready PID library in C, tested to match the JavaScript model to within 0.0001.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-sliders-h" aria-hidden="true"></i> Tune it live</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/pid-control-lab" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Simulation</dt><dd>JavaScript, RK4 integration, no dependencies</dd></div>
+					<div><dt>Firmware</dt><dd>C99 library, no malloc, Arduino &amp; Pico examples</dd></div>
+					<div><dt>Quality</dt><dd>35 JS tests · 4,028 C checks · 0 warnings</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: tune the drone</h2>
+					<p>Drag the <strong>Kp</strong>, <strong>Ki</strong> and <strong>Kd</strong> sliders and watch the response. Switch plants at the top, try <strong>Autotune</strong>, or open <strong>Compare</strong> to overlay P, PI and PID.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/pid-lab/index.html?plant=drone&amp;autoplay=1" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame" data-demo="../demos/pid-lab/index.html?plant=drone&amp;autoplay=1" title="PID Control Lab live demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#pid">What P, I and D do</a></li>
+					<li><a href="#discrete">A real-world PID</a></li>
+					<li><a href="#plants">The plants</a></li>
+					<li><a href="#autotune">Relay autotuning</a></li>
+					<li><a href="#firmware">The C library</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>PID controllers keep drones level, motors at speed and ovens at temperature. Their equation fits on one line, but the version that works on real hardware needs several extra details: saturation, integral windup, derivative kick and sensor noise. I built this lab to understand those details by changing them and watching what happens.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-bullseye"></i><strong>Setpoint</strong><span>Target value, steps &amp; schedules</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-calculator"></i><strong>PID</strong><span>Fixed sample time Ts</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-cogs"></i><strong>Plant</strong><span>Physics integrated with RK4 at 1 ms</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-wave-square"></i><strong>Sensor</strong><span>Noise, quantisation, feedback</span></div>
+					</div>
+					<p>The simulation is deterministic: the same settings always give the same result, whatever the screen's frame rate. That's why the live metrics match the offline test numbers exactly.</p>
+				</section>
+
+				<section id="pid" class="reveal">
+					<h2><span class="num">02</span> What P, I and D each do</h2>
+					<p>The quadcopter shows it best. Gravity pulls constantly, so the drone needs a steady thrust just to hover:</p>
+					<ul class="cs-list">
+						<li><strong>P</strong> reacts to the present error. On its own it can't hold the drone up without some error left over, so it settles about 1.7 m short of the target.</li>
+						<li><strong>+ I</strong> accumulates past error until that offset is gone. But the extra lag makes the loop less stable, and the oscillation grows.</li>
+						<li><strong>+ D</strong> reacts to how fast the measurement is changing and adds damping: 0.87% overshoot, settled in 2.85 s.</li>
+					</ul>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Drone, 0 → 5 m</th><th>Overshoot</th><th>Settling (2%)</th><th>Steady-state error</th></tr></thead>
+							<tbody>
+								<tr><td>P</td><td>4.8%</td><td>never</td><td>1.7 m</td></tr>
+								<tr><td>PI</td><td>22%</td><td>never (growing oscillation)</td><td>n/a</td></tr>
+								<tr><td>PID</td><td>0.87%</td><td>2.85 s</td><td>≈ 0</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/pid-lab/p-pi-pid-figure.jpg" alt="Altitude and thrust plots comparing P, PI and PID control of a quadcopter" loading="lazy" /></button>
+							<figcaption>The same drone under P, PI and PID control, with gains added one term at a time. Generated from real simulation output.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="discrete" class="reveal">
+					<h2><span class="num">03</span> A real-world PID</h2>
+					<p>A textbook PID behaves badly on real hardware. Each fix below is a switch in the lab, so you can turn it off and see the problem it solves:</p>
+					<ul class="cs-list">
+						<li><strong>Derivative on measurement:</strong> a setpoint step makes the error jump instantly, which spikes the D term (a "derivative kick"). Differentiating the measurement instead avoids it.</li>
+						<li><strong>Derivative filter:</strong> D amplifies sensor noise, so a first-order low-pass filter (time constant Td/N) smooths it.</li>
+						<li><strong>Anti-windup:</strong> when the actuator is maxed out, the integral keeps growing and causes a big overshoot later. Clamping stops the integral while saturated. Back-calculation bleeds off the excess.</li>
+						<li><strong>Output limits, setpoint weighting and bumpless gain changes</strong> round it out.</li>
+					</ul>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/pid-lab/windup-figure.jpg" alt="Heater step response with no anti-windup, clamping and back-calculation" loading="lazy" /></button>
+							<figcaption>Integrator windup on the heater: 46% overshoot with no anti-windup, against 2% with clamping and 6.6% with back-calculation.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="plants" class="reveal">
+					<h2><span class="num">04</span> The plants</h2>
+					<p>Each plant is a set of differential equations solved with 4th-order Runge–Kutta (RK4) at a 1 ms internal step, separate from the controller's sample time. That way, slowing the controller down never makes the physics less accurate.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Plant</th><th>Model</th><th>What makes it hard</th></tr></thead>
+							<tbody>
+								<tr><td>Motor speed</td><td>L·di/dt = V − Ri − Ke·ω; J·dω/dt = Kt·i − Bω − τ<sub>load</sub></td><td>Fast; the sample delay matters</td></tr>
+								<tr><td>Motor position</td><td>The same, plus dθ/dt = ω</td><td>Adds an integrator, so it overshoots easily</td></tr>
+								<tr><td>Drone altitude</td><td>m·dv/dt = T − mg − c·v|v|, thrust limited to 0–20 N</td><td>Gravity offset, saturation</td></tr>
+								<tr><td>Heater</td><td>First-order, 60 s time constant, 8 s dead time, heat only</td><td>Delay, and it can't cool</td></tr>
+								<tr><td>Ball on beam</td><td>Unstable</td><td>Falls without D</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/plants.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>export function rk4Step(f, x, h) {
+  const n = x.length;
+  const tmp = new Array(n);
+  const k1 = f(x);
+  for (let i = 0; i &lt; n; i++) tmp[i] = x[i] + 0.5 * h * k1[i];
+  const k2 = f(tmp);
+  for (let i = 0; i &lt; n; i++) tmp[i] = x[i] + 0.5 * h * k2[i];
+  const k3 = f(tmp);
+  for (let i = 0; i &lt; n; i++) tmp[i] = x[i] + h * k3[i];
+  const k4 = f(tmp);
+  const out = new Array(n);
+  for (let i = 0; i &lt; n; i++) out[i] = x[i] + (h / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+  return out;
+}</code></pre>
+					</div>
+					<p class="code__note">A test checks RK4 against the exact solution of a first-order system: the error stays below 10⁻⁶.</p>
+				</section>
+
+				<section id="autotune" class="reveal">
+					<h2><span class="num">05</span> Relay autotuning</h2>
+					<p>The Ziegler–Nichols method needs the plant's <em>ultimate gain</em> Ku and <em>period</em> Tu: the gain at which the loop oscillates steadily, and the period of that oscillation. Pushing a real machine to the edge of instability is risky, so the Åström–Hägglund relay method gets the same numbers safely. The controller is swapped for an on/off relay, the plant settles into a small steady oscillation, and Ku and Tu are measured from it.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/tuning.js · relay step</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>step(r, y, t) {
+  const e = r - y;
+  const prev = this.high;
+  if (this.high === null) this.high = e &gt;= 0;
+  else if (e &gt; this.eps) this.high = true;      // hysteresis band
+  else if (e &lt; -this.eps) this.high = false;
+
+  if (prev === false &amp;&amp; this.high) this.onUp(t);
+  if (prev === true &amp;&amp; !this.high) this.downs.push(t);
+
+  const u = Math.min(this.uMax, Math.max(this.uMin, this.bias + (this.high ? this.h : -this.h)));
+  this.log.push({ t, u, y });
+  if (this.ups.length &gt; this.cycles) this.done = true;
+  return u;
+}</code></pre>
+					</div>
+					<p>The textbook formula estimates Ku from the oscillation's peak height. On the heater, the time delay distorts the waveform and that estimate was <strong>20% off</strong>. Using only the oscillation's fundamental frequency component (a single-frequency Fourier estimate, Ku = |U₁| / |Y₁|) brought it within 2%:</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Plant</th><th>Ku error</th><th>Tu error</th></tr></thead>
+							<tbody>
+								<tr><td>3rd-order lag K/(τs+1)³</td><td>−3.8%</td><td>+1.7%</td></tr>
+								<tr><td>Heater (8 s dead time)</td><td>−1.9% (peak-height method: −20%)</td><td>+1.8%</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pid-lab/autotune.jpg" alt="Relay autotune limit cycle on the heater, then tuned PID response" loading="lazy" /></button>
+							<figcaption>Autotune on the heater: the relay oscillation, then the tuned gains applied.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pid-lab/compare-p-pi-pid.jpg" alt="Compare view overlaying P, PI and PID runs with a metrics table" loading="lazy" /></button>
+							<figcaption>Compare mode overlays up to three runs, each with its own metrics.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="firmware" class="reveal">
+					<h2><span class="num">06</span> The C library</h2>
+					<p>The simulator proves the maths; the C library is what you'd actually flash to a microcontroller. It's C99 with no dynamic memory and the same features as the JavaScript version, behind a small init/update/reset API. Here's the heart of the update step:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>firmware/pid.c</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>/* Filtered derivative (backward Euler): D[k] = Tf/(Tf+Ts)*D[k-1] + Kd/(Tf+Ts)*(ed[k]-ed[k-1]) */
+d = (c-&gt;tf / (c-&gt;tf + c-&gt;ts)) * pid-&gt;deriv + (c-&gt;kd / (c-&gt;tf + c-&gt;ts)) * (ed - pid-&gt;ed_prev);
+
+/* Output and saturation */
+v = p + pid-&gt;integ + d;
+u = clampr(v, c-&gt;out_min, c-&gt;out_max);
+sat = (v &gt; c-&gt;out_max) ? 1 : ((v &lt; c-&gt;out_min) ? -1 : 0);
+
+/* Integrator update for the next sample, with anti-windup */
+d_integ = c-&gt;ki * c-&gt;ts * e;
+if (c-&gt;aw == PID_AW_CLAMP) {
+    /* Conditional integration: hold I while saturated and e drives deeper into the limit */
+    if ((sat &gt; 0 &amp;&amp; e &gt; (pid_real_t)0) || (sat &lt; 0 &amp;&amp; e &lt; (pid_real_t)0)) {
+        d_integ = (pid_real_t)0;
+    }
+} else if (c-&gt;aw == PID_AW_BACKCALC) {
+    /* Back-calculation: feed the saturation excess (u - v) back with gain 1/Tt */
+    d_integ += (c-&gt;ts / tracking_time(c)) * (u - v);
+}</code></pre>
+					</div>
+					<h3>Proving C matches JavaScript</h3>
+					<p>A script records three closed-loop runs from the JavaScript model as "golden" CSV files: 1,300 samples covering every anti-windup mode, gain changes, a reset, noise and quantisation. The C tests replay the same inputs and compare every output.</p>
+					<div class="metrics">
+						<div class="metric"><b>5.0e-5</b><span>largest JS↔C difference (float build; limit 1e-4)</span></div>
+						<div class="metric"><b>~5e-7</b><span>largest difference in the double build</span></div>
+						<div class="metric"><b>4,028</b><span>C checks, 0 failures</span></div>
+						<div class="metric"><b>0</b><span>warnings with <code>-Wall -Wextra -Wpedantic -Wconversion</code></span></div>
+					</div>
+					<p>Example sketches for an Arduino (DC motor speed control with an encoder) and a Raspberry Pi Pico are included. They haven't been compiled or run on hardware yet.</p>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>The PID equation is the easy part. Saturation, windup, noise and sample delay decide whether it works on real hardware.</li>
+						<li>Keep the physics' time step separate from the controller's sample rate, and the simulation stays accurate and repeatable.</li>
+						<li>Check numbers against what you can measure. The textbook relay formula was 20% off on a delayed plant, and the tests caught it.</li>
+						<li>Golden-file tests are a simple, strong way to keep two implementations in different languages in sync.</li>
+						<li>Next steps: flash it to a real motor rig, add feed-forward and gain scheduling, and fix the rate limiter so it feeds back into the anti-windup.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="logic-sim.html"><small>← Previous</small><strong>Digital Logic Simulator</strong></a>
+			<a href="mips-simulator.html"><small>Next →</small><strong>MIPS Emulator</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

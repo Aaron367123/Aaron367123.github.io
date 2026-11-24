@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Mini-C Compiler — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a compiler for a small C-like language that generates MIPS assembly and runs it on my own MIPS emulator, in the browser." />
+	<meta name="theme-color" content="#07110c" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<link rel="stylesheet" href="../assets/css/board.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal"><span class="kicker-ref">U3</span> Compilers / Computer architecture</p>
+				<h1 class="cs-hero__title reveal">Mini-C Compiler</h1>
+				<p class="cs-hero__summary reveal">A compiler for a small C-like language, written from scratch: lexer, recursive-descent parser, semantic checks, optimiser and MIPS code generator. The assembly it produces runs on my own <a href="mips-simulator.html">MIPS emulator</a>, so the whole path from source code to a CPU executing instructions is software I wrote.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-play" aria-hidden="true"></i> Compile something</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/minic-compiler" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Pipeline</dt><dd>Lexer → parser → semantic → optimiser → codegen → peephole</dd></div>
+					<div><dt>Target</dt><dd>MIPS, run on my emulator</dd></div>
+					<div><dt>Quality</dt><dd>91 tests incl. 200 random programs, 0 dependencies</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: write C, get MIPS</h2>
+					<p>Edit the code and the assembly updates as you type. Put the cursor on a line to highlight the instructions it produced. Press <strong>Run</strong>, or <strong>Open in MIPS emulator</strong> to step through the result one instruction at a time.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/minic-compiler/index.html?example=fib&amp;run=1" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame" data-demo="../demos/minic-compiler/index.html?example=fib&amp;run=1&amp;line=7" title="Mini-C compiler live demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#language">The language</a></li>
+					<li><a href="#parsing">Parsing</a></li>
+					<li><a href="#codegen">Code generation</a></li>
+					<li><a href="#optimising">Optimising</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>After finishing the MIPS emulator, the natural next question was: where does the assembly come from? This compiler answers it. Together, the two projects take a program all the way from C-like source to a simulated CPU executing it.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-font"></i><strong>Lexer</strong><span>Characters → tokens with positions</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-sitemap"></i><strong>Parser</strong><span>Tokens → syntax tree (AST)</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-check-double"></i><strong>Semantic + optimise</strong><span>Scopes, checks, folding</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-microchip"></i><strong>Codegen → CPU</strong><span>MIPS assembly on my emulator</span></div>
+					</div>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/minic-compiler/compiler-asm.jpg" alt="Compiler demo showing Fibonacci source, the generated MIPS assembly with line 7 highlighted, and program output" loading="lazy" /></button>
+							<figcaption>Line 7 of the source is selected, and the 14 MIPS instructions it compiles to are highlighted. The program ran on the emulator in 9,533 instructions.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="language" class="reveal">
+					<h2><span class="num">02</span> The language</h2>
+					<p>Mini-C is a deliberately small subset of C. It's small enough to finish, but big enough for real programs like recursion, sorting and a prime sieve:</p>
+					<ul class="cs-list">
+						<li>32-bit <code>int</code> only: global variables and arrays, and local variables with block scope and shadowing.</li>
+						<li>Functions with up to 4 parameters, passed in <code>$a0</code>–<code>$a3</code> following the MIPS convention, plus recursion.</li>
+						<li><code>if</code>/<code>else</code>, <code>while</code>, <code>for</code>, <code>break</code>, <code>continue</code>, compound assignment (<code>+=</code> and friends), and <code>++</code>/<code>--</code>.</li>
+						<li>All of C's binary operators with C's precedence, and short-circuit <code>&amp;&amp;</code>/<code>||</code>. Arithmetic wraps at 32 bits.</li>
+						<li>Built-ins <code>print_int</code>, <code>print_char</code> and <code>print("…")</code>, which compile to MIPS system calls.</li>
+					</ul>
+					<p>Errors point at the exact spot with <code>line:col</code> and a caret, like a real compiler. The semantic pass reports every error it finds in one go rather than stopping at the first.</p>
+				</section>
+
+				<section id="parsing" class="reveal">
+					<h2><span class="num">03</span> Parsing</h2>
+					<p>The parser is hand-written recursive descent. Expressions use <strong>precedence climbing</strong>: one function handles every binary operator, driven by a precedence table, instead of one grammar rule per precedence level.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/parser.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>/*
+ * parseBinary(minPrec) parses an expression whose binary operators all have
+ * precedence &gt;= minPrec. ... The "+ 1" makes operators of equal precedence
+ * group to the left:
+ *
+ *   a - b - c    -&gt;  (a - b) - c
+ *   a + b * c    -&gt;  a + (b * c)    (the recursive call swallows "* c")
+ */
+parseBinary(minPrec) {
+  let left = this.parseUnary();
+  for (;;) {
+    const t = this.peek();
+    const prec = t.type === 'op' ? PRECEDENCE[t.value] : undefined;
+    if (prec === undefined || prec &lt; minPrec) return left;
+    this.next();
+    const right = this.parseBinary(prec + 1);
+    left = { kind: 'Binary', op: t.value, left, right, ...at(t) };
+  }
+}</code></pre>
+					</div>
+					<p class="code__note">Comment shortened. The <code>prec + 1</code> in the recursive call is what makes operators left-associative.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/minic-compiler/compiler-ast.jpg" alt="AST view of the factorial program showing resolved symbols and stack frame offsets" loading="lazy" /></button>
+							<figcaption>The AST tab after semantic analysis: each name is resolved to a stack slot (e.g. <code>param -12($fp)</code>) or a function label.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="codegen" class="reveal">
+					<h2><span class="num">04</span> Code generation</h2>
+					<p>Each function gets a stack frame. The <strong>prologue</strong> reserves space, saves the return address and the caller's frame pointer, and points <code>$fp</code> at the new frame. The <strong>epilogue</strong> undoes it in reverse order. Locals and parameters then live at fixed offsets from <code>$fp</code>, which makes recursion work:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/codegen.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// Prologue: make the frame, save $ra and the caller's $fp, set up our $fp.
+this.emit('addiu', ['$sp', '$sp', String(-frame)], 'prologue: allocate frame');
+this.emit('sw', ['$ra', `${frame - 4}($sp)`], 'save return address');
+this.emit('sw', ['$fp', `${frame - 8}($sp)`], "save caller's frame pointer");
+this.emit('addiu', ['$fp', '$sp', String(frame)], '$fp = top of this frame');
+fn.paramSymbols.forEach((symbol, i) =&gt; {
+  this.emit('sw', [ARG_REGISTERS[i], `${symbol.offset}($fp)`], `parameter ${symbol.name}`);
+});
+
+for (const s of fn.body.body) this.statement(s);
+
+// Falling off the end of a function returns 0.
+this.emit('li', ['$v0', '0'], 'no return: result is 0');
+this.label(`${fn.symbol.label}.ret`);
+// Epilogue: the mirror image of the prologue.
+this.emit('lw', ['$ra', `${frame - 4}($sp)`], 'epilogue: restore $ra');
+this.emit('lw', ['$fp', `${frame - 8}($sp)`], "restore caller's $fp");
+this.emit('addiu', ['$sp', '$sp', String(frame)], 'free the frame');
+this.emit('jr', ['$ra'], 'return');</code></pre>
+					</div>
+					<p class="code__note">Lightly trimmed comments.</p>
+					<p>Expressions are evaluated into <code>$t</code> registers, which are handed out like a stack. When they run out, or a function call would overwrite them, values are spilled to the memory stack and reloaded afterwards. Every block of output is commented with the source line it came from, which is what lets the demo highlight the matching assembly.</p>
+				</section>
+
+				<section id="optimising" class="reveal">
+					<h2><span class="num">05</span> Optimising</h2>
+					<p>The <code>-O1</code> flag turns on two passes:</p>
+					<ul class="cs-list">
+						<li><strong>AST optimiser:</strong> constant folding (<code>2 * 3 + x</code> → <code>6 + x</code>), algebraic identities, removal of dead code after <code>return</code>, and strength reduction.</li>
+						<li><strong>Peephole optimiser:</strong> scans the generated assembly for wasteful patterns, such as a push immediately followed by a pop, redundant moves, or a jump to the very next line.</li>
+					</ul>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/optimizer.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// Strength reduction: multiplying by 2^k is a left shift by k (exact
+// for 32-bit wrap-around arithmetic, negative numbers included).
+if (isPowerOfTwo(rc)) return this.simplified(shiftNode(l, rc, e));
+if (isPowerOfTwo(lc)) return this.simplified(shiftNode(r, lc, e));
+return e;
+case '/':
+  if (rc === 1) return this.simplified(l);
+  return e; // x / 2^k is NOT x &gt;&gt; k for negative x, so no shift here</code></pre>
+					</div>
+					<p class="code__note">That last line avoids a classic trap. In C, <code>-7 / 2</code> is −3 because division rounds toward zero, but <code>-7 &gt;&gt; 1</code> is −4 because a shift rounds down. Replacing one with the other would be a bug.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Example</th><th>-O0</th><th>-O1</th><th>Saved</th></tr></thead>
+							<tbody>
+								<tr><td>fibonacci</td><td>11,185</td><td>9,533</td><td>−14.8%</td></tr>
+								<tr><td>factorial</td><td>2,597</td><td>2,200</td><td>−15.3%</td></tr>
+								<tr><td>bubblesort</td><td>2,412</td><td>2,124</td><td>−11.9%</td></tr>
+								<tr><td>hanoi</td><td>139,700</td><td>123,274</td><td>−11.8%</td></tr>
+								<tr><td>expressions</td><td>108</td><td>67</td><td>−38.0%</td></tr>
+								<tr><td>All 10 examples</td><td>169,046</td><td>149,234</td><td>−11.7%</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p class="code__note">Instructions executed on the emulator. The gains are modest because <code>-O0</code> already avoids the worst patterns: it branches directly on comparisons, tests loop conditions at the bottom of the loop, and keeps temporaries in registers.</p>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">06</span> Testing</h2>
+					<ul class="cs-list">
+						<li><strong>Unit tests</strong> for the lexer, the parser (precedence, associativity, error messages), the semantic checks and the optimiser.</li>
+						<li><strong>End-to-end:</strong> all 10 example programs are compiled at both optimisation levels, run on the real emulator engine, and their output compared exactly.</li>
+						<li><strong>Random programs:</strong> 200 randomly generated expressions with literals, locals, globals and function calls, compiled at both levels and checked against an independent 32-bit JavaScript evaluator. A seed makes any failure reproducible. I also ran 5,000 deeper ones locally.</li>
+						<li>A test checks that the browser demo's copies of the compiler and emulator are identical to the source files.</li>
+					</ul>
+					<p>91 tests in total, all passing, and the emulator's own 61 tests still pass too.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/minic-compiler/compiler-in-emulator.jpg" alt="MIPS emulator opened with compiler output, finished running factorial" loading="lazy" /></button>
+							<figcaption>"Open in MIPS emulator" passes the generated assembly to the emulator through the URL. The factorial program finishes in 2,200 instructions, the same count as in the compiler demo.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Writing a compiler made calling conventions concrete: why <code>$ra</code> must be saved, why the frame pointer exists, and what "caller-saved" really costs.</li>
+						<li>Random-program testing finds the bugs you don't think of, especially around precedence and signed arithmetic.</li>
+						<li>Source-location tracking pays off everywhere: error messages, the assembly comments and the demo's line highlighting all come from it.</li>
+						<li>Next steps: keeping local variables in registers instead of on the stack, constant propagation, pointers and <code>char</code> arrays, and a <code>switch</code> statement.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="pet-monitor-live.html"><small>← Previous</small><strong>Pet Monitor Live</strong></a>
+			<a href="digit-recognizer.html"><small>Next →</small><strong>Neural Network from Scratch</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

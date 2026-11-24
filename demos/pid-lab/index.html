@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PID Control Lab</title>
+  <meta name="description" content="Tune a PID controller against simulated physical plants in real time: DC motor, drone altitude, heater with dead time, ball on beam. Relay autotune, optimiser and P/PI/PID comparison.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/lab.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="3" y="3" width="26" height="26" rx="5" fill="none" stroke="var(--copper)" stroke-width="1.6"/>
+          <path d="M7 21h5l3-10 3 14 3-9h4" fill="none" stroke="var(--led)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="7" cy="21" r="1.6" fill="var(--copper)"/><circle cx="25" cy="16" r="1.6" fill="var(--copper)"/>
+        </svg>
+        <div>
+          <h1>PID Control Lab</h1>
+          <p class="sub">Tune a controller against real plant physics · 100 % in your browser</p>
+        </div>
+      </div>
+      <div class="seg plant-seg" id="plant-seg" role="group" aria-label="Plant"></div>
+      <div class="seg" id="view-seg" role="group" aria-label="View">
+        <button type="button" data-view="live" aria-pressed="true">Live</button>
+        <button type="button" data-view="compare" aria-pressed="false">Compare</button>
+      </div>
+      <div class="seg" id="speed-seg" role="group" aria-label="Simulation speed">
+        <button type="button" data-speed="0" aria-label="Pause" title="Pause (space)">❚❚</button>
+        <button type="button" data-speed="1">1×</button>
+        <button type="button" data-speed="5">5×</button>
+        <button type="button" data-speed="20">20×</button>
+      </div>
+    </header>
+
+    <main class="lab">
+      <section class="panel visual" aria-label="Plant">
+        <div class="panel-head">
+          <h2 class="silk" id="plant-title">Plant</h2>
+          <span class="silk" id="run-state"><span class="led on"></span>PID</span>
+        </div>
+        <canvas id="plant-canvas" aria-label="Animated plant" role="img"></canvas>
+        <div class="readouts">
+          <div class="readout sp"><span class="silk">SP</span><span class="v" id="ro-sp">—</span></div>
+          <div class="readout pv"><span class="silk">PV</span><span class="v" id="ro-pv">—</span></div>
+          <div class="readout out"><span class="silk">OUT</span><span class="v" id="ro-u">—</span></div>
+          <div class="readout"><span class="silk">T</span><span class="v" id="ro-t">—</span></div>
+        </div>
+        <p class="plant-desc" id="plant-desc"></p>
+      </section>
+
+      <section class="panel metrics" aria-label="Step response metrics">
+        <div class="panel-head"><h2 class="silk">Step metrics</h2><span class="silk" id="metric-since"></span></div>
+        <div class="metric-grid">
+          <div class="metric" id="m-rise"><span class="silk">Rise 10–90</span><span class="v">—</span></div>
+          <div class="metric" id="m-os"><span class="silk">Overshoot</span><span class="v">—</span></div>
+          <div class="metric" id="m-settle"><span class="silk">Settling 2 %</span><span class="v">—</span></div>
+          <div class="metric" id="m-sse"><span class="silk">SS error</span><span class="v">—</span></div>
+          <div class="metric" id="m-itae"><span class="silk">ITAE</span><span class="v">—</span></div>
+          <div class="metric" id="m-sat"><span class="silk">Saturated</span><span class="v">—</span></div>
+        </div>
+        <div class="foot">Measured on the true plant output since the last setpoint change.</div>
+      </section>
+
+      <section class="panel plots" aria-label="Plots">
+        <div id="live-view">
+          <div class="plot-wrap plot-y">
+            <span class="silk plot-title" id="y-title">Output</span>
+            <div class="legend"><span style="color:var(--signal)"><i class="dash"></i>SP</span><span style="color:var(--led)"><i></i>PV</span></div>
+            <canvas id="plot-y"></canvas>
+            <div class="banner" id="banner" hidden></div>
+          </div>
+          <div class="plot-wrap plot-u">
+            <span class="silk plot-title" id="u-title">Control effort u</span>
+            <div class="legend"><span style="color:var(--copper)"><i></i>u</span><span style="color:var(--warn)"><i></i>saturated</span></div>
+            <canvas id="plot-u"></canvas>
+          </div>
+          <div class="plot-wrap plot-pid" id="pid-wrap">
+            <span class="silk plot-title">P / I / D terms</span>
+            <div class="legend"><span style="color:var(--copper-bright)"><i></i>P</span><span style="color:var(--signal)"><i></i>I</span><span style="color:var(--danger)"><i></i>D</span></div>
+            <canvas id="plot-pid"></canvas>
+          </div>
+        </div>
+        <div id="compare-view" hidden>
+          <div class="plot-wrap plot-y">
+            <span class="silk plot-title" id="cy-title">Step response</span>
+            <canvas id="cplot-y"></canvas>
+          </div>
+          <div class="plot-wrap plot-u">
+            <span class="silk plot-title">Control effort u</span>
+            <canvas id="cplot-u"></canvas>
+          </div>
+          <div class="table-scroll">
+            <table class="compare-table" id="compare-table"></table>
+          </div>
+          <p class="empty-note" id="compare-empty" hidden>No runs yet. Add the current gains or load the P / PI / PID presets.</p>
+          <div class="compare-actions">
+            <button type="button" class="btn sm primary" id="cmp-presets">P / PI / PID presets</button>
+            <button type="button" class="btn sm" id="cmp-add">+ Add current gains</button>
+            <button type="button" class="btn sm" id="cmp-clear">Clear</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel board" aria-label="Controller settings">
+        <div class="panel-head"><h2 class="silk">Controller U1</h2><span class="mono ts" id="ts-label"></span></div>
+        <div class="board-cols">
+          <div class="board-section">
+            <div class="silk">Gains</div>
+            <div id="trimmers"></div>
+          </div>
+          <div class="board-section">
+            <div class="silk">Setpoint &amp; limits</div>
+            <div class="setpoint-row trim">
+              <label for="sp-range">SP</label>
+              <input type="range" id="sp-range" min="0" max="1000" step="1">
+              <input type="number" id="sp-num" step="any" aria-label="Setpoint value">
+            </div>
+            <div class="limits">
+              <div class="trim"><label for="umin">MIN</label><input type="number" id="umin" step="any"></div>
+              <div class="trim"><label for="umax">MAX</label><input type="number" id="umax" step="any"></div>
+            </div>
+          </div>
+          <div class="board-section">
+            <div class="silk">Options</div>
+            <div class="toggles">
+              <div class="full">
+                <span class="silk">Anti-windup</span>
+                <div class="seg" id="aw-seg" role="group" aria-label="Anti-windup">
+                  <button type="button" data-aw="none">Off</button>
+                  <button type="button" data-aw="clamp">Clamp</button>
+                  <button type="button" data-aw="backcalc">Back-calc</button>
+                </div>
+              </div>
+              <label class="switch"><input type="checkbox" id="opt-dom" checked><span></span>D on meas.</label>
+              <label class="switch"><input type="checkbox" id="opt-noise"><span></span>Noise</label>
+              <label class="switch"><input type="checkbox" id="opt-terms" checked><span></span>P/I/D plot</label>
+              <label class="switch"><input type="checkbox" id="opt-auto"><span></span>Auto steps</label>
+            </div>
+          </div>
+          <div class="board-section">
+            <div class="silk">Actions</div>
+            <div class="buttons">
+              <button type="button" class="btn primary" id="btn-step">Step SP</button>
+              <button type="button" class="btn" id="btn-dist">Disturb</button>
+              <button type="button" class="btn" id="btn-tune">Autotune</button>
+              <button type="button" class="btn" id="btn-opt">Optimise</button>
+              <button type="button" class="btn" id="btn-reset">Reset</button>
+              <button type="button" class="btn" id="btn-defaults">Defaults</button>
+            </div>
+            <div class="status" id="status" aria-live="polite">Ready.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="note">
+      Simulation: RK4 at a fixed internal step, PID at a fixed sample time Ts, seeded sensor noise - deterministic and independent of frame rate.
+      Engine: <span class="mono">engine/*.js</span> (byte-identical to the project's <span class="mono">src/</span>), mirrored in C99 for firmware.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Neural Network from Scratch — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a neural network written from scratch in JavaScript, trained on MNIST to 98.86% accuracy, running live in the browser." />
+	<meta name="theme-color" content="#07110c" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<link rel="stylesheet" href="../assets/css/board.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal"><span class="kicker-ref">U4</span> Machine learning / Numerical computing</p>
+				<h1 class="cs-hero__title reveal">Neural Network from Scratch</h1>
+				<p class="cs-hero__summary reveal">A neural network written from scratch in plain JavaScript, with no ML libraries. I implemented the matrix maths, backpropagation, the Adam optimiser and data augmentation myself, then trained it on MNIST handwritten digits to <strong>98.86% test accuracy</strong>. The same code runs in your browser: draw a digit and watch the network's neurons light up.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Draw a digit</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/neural-net-from-scratch" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Model</dt><dd>784-256-128-10 MLP, 235,146 parameters</dd></div>
+					<div><dt>Result</dt><dd>98.86% test accuracy, 232 KB int8 model</dd></div>
+					<div><dt>Quality</dt><dd>43 tests incl. gradient checks, 0 dependencies</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: draw a digit</h2>
+					<p>Draw 0–9 in the pad. The middle panel shows the 28×28 image the network actually sees, and the bottom panel shows which neurons fire. <strong>Try a test image</strong> cycles through real MNIST samples, including some the network gets wrong.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/digit-recognizer/index.html" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame" data-demo="../demos/digit-recognizer/index.html?sample=7" title="Digit recognizer live demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#maths">The maths, by hand</a></li>
+					<li><a href="#training">Training</a></li>
+					<li><a href="#results">Results</a></li>
+					<li><a href="#browser">Running in the browser</a></li>
+					<li><a href="#performance">Making it fast</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Libraries like PyTorch make neural networks a few lines of code, which also hides how they work. I wanted to understand every step, so I built the whole stack myself: matrices, layers, gradients, optimiser, training loop and model format. One codebase trains the network in Node.js and runs it in the browser.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-database"></i><strong>MNIST</strong><span>60k training + 10k test images</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-dumbbell"></i><strong>Train in Node</strong><span>AdamW, augmentation, ~11 min</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-compress-alt"></i><strong>Quantise</strong><span>940 KB → 232 KB int8</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-paint-brush"></i><strong>Browser</strong><span>Draw → preprocess → predict</span></div>
+					</div>
+				</section>
+
+				<section id="maths" class="reveal">
+					<h2><span class="num">02</span> The maths, by hand</h2>
+					<p>Each layer has a forward pass and a backward pass that I derived and coded myself. The neatest piece is the output: combining softmax with cross-entropy loss makes the gradient collapse to <em>predicted probability minus the true answer</em>:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/layers.js · softmax + cross-entropy</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>/** dL/dz = (p − onehot(label)) / n */
+backward() {
+  const { n, k, labels } = this;
+  const d = this.dBuf.get(n * k);
+  const p = this.probs;
+  const inv = 1 / n;
+  for (let i = 0; i &lt; n; i++) {
+    const r = i * k;
+    for (let j = 0; j &lt; k; j++) d[r + j] = p[r + j] * inv;
+    d[r + labels[i]] -= inv;
+  }
+  return d;
+}</code></pre>
+					</div>
+					<p>Getting backpropagation slightly wrong is easy, and the network often still half-learns, which hides the bug. So every layer is <strong>gradient-checked</strong>: the test nudges each weight by ±0.00001, measures how the loss changes, and compares that with the gradient backprop computed. The worst relative error was 9.8 × 10⁻⁹, far inside the 10⁻⁴ tolerance.</p>
+					<p>The optimiser is Adam with decoupled weight decay (AdamW), also tested against hand-computed steps:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/optim.js · Adam update</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>m[i] = b1 * m[i] + (1 - b1) * gi;          // running mean of the gradient
+v[i] = b2 * v[i] + (1 - b2) * gi * gi;     // running mean of its square
+const mHat = m[i] / bc1;                   // bias correction for early steps
+const vHat = v[i] / bc2;
+w[i] -= lr * (mHat / (Math.sqrt(vHat) + eps) + (decoupled ? lam * w[i] : 0));</code></pre>
+					</div>
+					<p class="code__note">The comments are added here for the case study.</p>
+				</section>
+
+				<section id="training" class="reveal">
+					<h2><span class="num">03</span> Training</h2>
+					<ul class="cs-list">
+						<li><strong>Network:</strong> 784 → 256 → 128 → 10 with ReLU and 20% dropout, 235,146 parameters.</li>
+						<li><strong>Optimiser:</strong> AdamW with a learning rate of 0.001, weight decay of 0.02 and batches of 128. The learning rate ramps up over the first epoch (warm-up), then decreases along a cosine curve over 30 epochs.</li>
+						<li><strong>Augmentation I wrote myself:</strong> random rotation (±10°), scaling (±5%) and shifts (±2 px), so the network learns digits that aren't perfectly centred.</li>
+						<li><strong>Validation:</strong> 5,000 training images are held out, and the best epoch (24) is kept. Training takes about 11 minutes on one CPU core.</li>
+					</ul>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/training-curves.jpg" alt="Training and validation loss and accuracy curves over 30 epochs" loading="lazy" /></button>
+							<figcaption>Loss and accuracy for training and validation data over 30 epochs.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="results" class="reveal">
+					<h2><span class="num">04</span> Results</h2>
+					<div class="metrics">
+						<div class="metric"><b>98.86%</b><span>test accuracy on 10,000 unseen digits</span></div>
+						<div class="metric"><b>0.00</b><span>accuracy lost by 8-bit quantisation</span></div>
+						<div class="metric"><b>232 KB</b><span>model sent to the browser (from 940 KB)</span></div>
+						<div class="metric"><b>0.11 ms</b><span>per prediction (Node, one digit)</span></div>
+					</div>
+					<p>The hardest digits are <strong>8</strong> (97.7%), <strong>9</strong> (97.9%) and <strong>5</strong> (98.5%). The most common mistakes are 4→9, 5→3 and 9→4, which are the same pairs humans confuse when writing quickly.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/confusion-matrix.jpg" alt="Confusion matrix on the MNIST test set" loading="lazy" /></button>
+							<figcaption>Confusion matrix on the test set: green is correct, and the copper shading gets stronger with more mistakes.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/first-layer-weights.jpg" alt="First-layer weights of 32 hidden units visualised as 28 by 28 images" loading="lazy" /></button>
+							<figcaption>What 32 first-layer neurons look for: each tile shows one neuron's 784 input weights as a 28×28 image.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="browser" class="reveal">
+					<h2><span class="num">05</span> Running in the browser</h2>
+					<p>MNIST digits are always centred and scaled the same way, but a person's drawing isn't. Feeding the raw canvas to the network gives poor results, so the demo recreates MNIST's exact preprocessing:</p>
+					<ul class="cs-list">
+						<li>Crop to the drawing's bounding box, and adjust the stroke width to match MNIST's pen.</li>
+						<li>Scale the longest side to 20 px, averaging pixels and keeping the aspect ratio.</li>
+						<li>Centre the result in a 28×28 frame by its <strong>centre of mass</strong>, using a sub-pixel shift.</li>
+					</ul>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/preprocess.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// --- 4. centre of mass → (14, 14) with a sub-pixel bilinear shift --------
+const com = centerOfMass(box, tw, th);
+const ox = MNIST_COM - com.x, oy = MNIST_COM - com.y; // where box(0,0) lands in the frame
+const input = new Float32Array(FRAME * FRAME);
+for (let y = 0; y &lt; FRAME; y++) {
+  for (let x = 0; x &lt; FRAME; x++) input[y * FRAME + x] = bilinear(box, tw, th, x - ox, y - oy);
+}</code></pre>
+					</div>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/preprocessing.jpg" alt="Preprocessing steps from a raw drawing to a centred 28 by 28 image, compared with real MNIST samples" loading="lazy" /></button>
+							<figcaption>A raw drawing → cropped with stroke width adjusted → scaled to 20 px → centred in 28×28, next to real MNIST 4s for comparison.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/network-viz.jpg" alt="Network activity visualisation with active neurons and strongest connections lit" loading="lazy" /></button>
+							<figcaption>The network panel: neurons glow with their activation, and the strongest paths to the answer light up like traces on a board.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/digit-recognizer/demo-misclassified.jpg" alt="A real MNIST 4 that the network classifies as 9" loading="lazy" /></button>
+							<figcaption>An honest failure: a real MNIST "4" that the network reads as a 9.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="performance" class="reveal">
+					<h2><span class="num">06</span> Making it fast</h2>
+					<p>Pure JavaScript has no GPU and no BLAS library to lean on, so the matrix multiply decides how fast training is. I profiled it, then optimised step by step:</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Optimisation</th><th>Speed-up vs naive loop</th></tr></thead>
+							<tbody>
+								<tr><td>Forward pass, 4×4 register tiling</td><td>4.1×</td></tr>
+								<tr><td>+ skipping zero pixels (~81% of MNIST is blank)</td><td>7.9×</td></tr>
+								<tr><td>Weight gradient (Xᵀ·G)</td><td>3.3×</td></tr>
+								<tr><td>Input gradient (G·Wᵀ)</td><td>3.8×</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>Skipping zero pixels only works if the input is never shifted away from zero. So instead of normalising the pixels, I built the normalisation into the first layer's weights and bias (and gradient-checked that change too). Profiling also showed that a sum recomputed on every prediction was the real bottleneck. Caching it cut inference from 0.49 ms to 0.11 ms.</p>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Gradient checking is essential. A network with a subtly wrong gradient still learns a bit, so the bug hides.</li>
+						<li>Preprocessing mattered as much as the model. Matching MNIST's centring is the difference between a toy and a demo that works.</li>
+						<li>8-bit quantisation cost nothing here and made the download four times smaller.</li>
+						<li>Limitations: there's no "not a digit" answer, so a scribble still gets a confident guess. A small convolutional network (CNN) would typically reach about 99.3–99.5%, which is my next step.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="minic-compiler.html"><small>← Previous</small><strong>Mini-C Compiler</strong></a>
+			<a href="c-http-server.html"><small>Next →</small><strong>tinyhttpd: HTTP Server in C</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

@@ -3,23 +3,23 @@
    prefers-color-scheme or ?theme=light (sets data-theme on <html>). */
 
 :root {
-  --bg: #0b0f1a;
-  --surface: #141a2e;
-  --surface-2: #0f1424;
-  --surface-3: #1b2240;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #e8ebf5;
-  --muted: #9aa3bd;
-  --faint: #5d6684;
-  --accent: #7c5cff;
-  --accent-2: #22d3ee;
-  --accent-soft: rgba(124, 92, 255, 0.18);
-  --accent-2-soft: rgba(34, 211, 238, 0.16);
-  --danger: #f87171;
+  --bg: #07110c;
+  --surface: #0e1d16;
+  --surface-2: #0a1711;
+  --surface-3: #13261d;
+  --border: rgba(196, 228, 208, 0.10);
+  --border-strong: rgba(196, 228, 208, 0.20);
+  --text: #e8f0ea;
+  --muted: #9fb5a8;
+  --faint: #6f8679;
+  --accent: #e0a458;
+  --accent-2: #3ee08f;
+  --accent-soft: rgba(224, 164, 88, 0.18);
+  --accent-2-soft: rgba(62, 224, 143, 0.16);
+  --danger: #ff6b5e;
   --danger-soft: rgba(248, 113, 113, 0.16);
-  --success: #34d399;
-  --on-accent: #ffffff;
+  --success: #3ee08f;
+  --on-accent: #1b1208;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -34,45 +34,45 @@
 
 /* Light theme tokens, used by ?theme=light and by prefers-color-scheme: light */
 :root[data-theme='light'] {
-  --bg: #f5f6fb;
-  --surface: #ffffff;
-  --surface-2: #f6f7fc;
-  --surface-3: #eceffa;
-  --border: rgba(20, 26, 46, 0.1);
-  --border-strong: rgba(20, 26, 46, 0.2);
-  --text: #141a2e;
-  --muted: #59627d;
-  --faint: #9aa3bd;
-  --accent: #6a46ff;
-  --accent-2: #0e94b0;
-  --accent-soft: rgba(106, 70, 255, 0.12);
-  --accent-2-soft: rgba(14, 148, 176, 0.14);
+  --bg: #f4f1e8;
+  --surface: #fffdf6;
+  --surface-2: #f0ebdc;
+  --surface-3: #e8e2d0;
+  --border: rgba(20, 35, 27, 0.1);
+  --border-strong: rgba(20, 35, 27, 0.2);
+  --text: #0e1d16;
+  --muted: #4d5f55;
+  --faint: #9fb5a8;
+  --accent: #b06a26;
+  --accent-2: #138a4b;
+  --accent-soft: rgba(176, 106, 38, 0.12);
+  --accent-2-soft: rgba(19, 138, 75, 0.14);
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.1);
-  --success: #059669;
-  --shadow: 0 8px 24px rgba(20, 26, 46, 0.08);
+  --success: #138a4b;
+  --shadow: 0 8px 24px rgba(20, 35, 27, 0.08);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
-    --bg: #f5f6fb;
-    --surface: #ffffff;
-    --surface-2: #f6f7fc;
-    --surface-3: #eceffa;
-    --border: rgba(20, 26, 46, 0.1);
-    --border-strong: rgba(20, 26, 46, 0.2);
-    --text: #141a2e;
-    --muted: #59627d;
-    --faint: #9aa3bd;
-    --accent: #6a46ff;
-    --accent-2: #0e94b0;
-    --accent-soft: rgba(106, 70, 255, 0.12);
-    --accent-2-soft: rgba(14, 148, 176, 0.14);
+    --bg: #f4f1e8;
+    --surface: #fffdf6;
+    --surface-2: #f0ebdc;
+    --surface-3: #e8e2d0;
+    --border: rgba(20, 35, 27, 0.1);
+    --border-strong: rgba(20, 35, 27, 0.2);
+    --text: #0e1d16;
+    --muted: #4d5f55;
+    --faint: #9fb5a8;
+    --accent: #b06a26;
+    --accent-2: #138a4b;
+    --accent-soft: rgba(176, 106, 38, 0.12);
+    --accent-2-soft: rgba(19, 138, 75, 0.14);
     --danger: #dc2626;
     --danger-soft: rgba(220, 38, 38, 0.1);
-    --success: #059669;
-    --shadow: 0 8px 24px rgba(20, 26, 46, 0.08);
+    --success: #138a4b;
+    --shadow: 0 8px 24px rgba(20, 35, 27, 0.08);
     color-scheme: light;
   }
 }

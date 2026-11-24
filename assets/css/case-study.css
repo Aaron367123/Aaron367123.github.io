@@ -154,7 +154,7 @@
 	margin: 1.6em 0;
 	border-radius: var(--radius);
 	border: 1px solid var(--border);
-	background: linear-gradient(135deg, rgba(124, 92, 255, 0.10), rgba(34, 211, 238, 0.06));
+	background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.10), rgba(var(--led-rgb), 0.06));
 }
 .callout > i { color: var(--accent-2); font-size: 1.1rem; margin-top: 5px; }
 .callout p { margin: 0; color: var(--text); }
@@ -181,7 +181,7 @@
 	height: 40px;
 	margin-bottom: 14px;
 	border-radius: 11px;
-	background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(34, 211, 238, 0.18));
+	background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(var(--led-rgb), 0.18));
 	color: var(--accent-2);
 }
 .feature-tile h4 { margin: 0 0 6px; font-family: var(--font-head); font-size: 1.02rem; color: var(--text); }
@@ -241,14 +241,14 @@
 	flex: none;
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	background: transparent;
-	color: #c9d1e8;
+	color: #cfe0d5;
 	padding: 4px 10px;
 	border-radius: 8px;
 	font: inherit;
 	cursor: pointer;
 	transition: border-color 0.2s;
 }
-.code__copy:hover { border-color: #22d3ee; }
+.code__copy:hover { border-color: var(--accent-2); }
 .code pre {
 	margin: 0;
 	padding: 18px 20px;
@@ -294,8 +294,8 @@
 	border-radius: 999px;
 	font-size: 0.78rem;
 	font-weight: 600;
-	color: #22c55e;
-	background: rgba(34, 197, 94, 0.12);
+	color: var(--accent-2);
+	background: rgba(var(--led-rgb), 0.12);
 	margin-bottom: 10px;
 }
 .badge-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
@@ -316,12 +316,12 @@
 	border: 1px solid var(--border);
 	background: var(--surface);
 }
-.version--new { border-color: rgba(124, 92, 255, 0.45); background: linear-gradient(160deg, rgba(124, 92, 255, 0.10), var(--surface) 60%); }
+.version--new { border-color: rgba(var(--accent-rgb), 0.45); background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.10), var(--surface) 60%); }
 .version h4 { margin: 0 0 4px; font-family: var(--font-head); font-size: 1.05rem; color: var(--text); }
 .version small { display: block; color: var(--text-faint); margin-bottom: 12px; font-size: 0.8rem; }
 .version ul { display: grid; gap: 6px; }
 .version li { font-size: 0.92rem; color: var(--text-muted); padding-left: 22px; position: relative; }
-.version li::before { position: absolute; left: 0; font-family: 'Font Awesome 5 Free'; font-weight: 900; content: "\f00c"; color: #22c55e; font-size: 0.8em; top: 0.25em; }
+.version li::before { position: absolute; left: 0; font-family: 'Font Awesome 5 Free'; font-weight: 900; content: "\f00c"; color: var(--accent-2); font-size: 0.8em; top: 0.25em; }
 .version li.no::before { content: "\f00d"; color: #f87171; }
 @media (max-width: 760px) { .versions { grid-template-columns: 1fr; } }
 
@@ -344,8 +344,8 @@
 }
 .bits b { display: block; font-size: 0.95rem; color: var(--text); }
 .bits span { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
-.bits > div:nth-child(1) { background: rgba(124, 92, 255, 0.18); }
-.bits > div:nth-child(2) { background: rgba(34, 211, 238, 0.14); }
+.bits > div:nth-child(1) { background: rgba(var(--accent-rgb), 0.18); }
+.bits > div:nth-child(2) { background: rgba(var(--led-rgb), 0.14); }
 .bits > div:nth-child(3) { background: rgba(244, 114, 182, 0.14); }
 .bits > div:nth-child(4) { background: rgba(250, 204, 21, 0.12); }
 .bits-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.4em; }
@@ -409,8 +409,8 @@
 	opacity: 0.85;
 }
 .sorter__bars span.is-cmp { background: #facc15; opacity: 1; }
-.sorter__bars span.is-swap { background: #f472b6; opacity: 1; }
-.sorter__bars span.is-done { background: #22c55e; opacity: 0.9; transition: background-color 0.4s; }
+.sorter__bars span.is-swap { background: var(--accent-bright); opacity: 1; }
+.sorter__bars span.is-done { background: var(--accent-2); opacity: 0.9; transition: background-color 0.4s; }
 .sorter__stats {
 	display: flex;
 	flex-wrap: wrap;
@@ -536,7 +536,7 @@
 }
 .lightbox.is-open { opacity: 1; visibility: visible; }
 .lightbox img { max-width: min(1200px, 100%); max-height: 80vh; border-radius: 12px; background: #fff; }
-.lightbox p { color: #c9d1e8; text-align: center; margin: 14px 0 0; max-width: 760px; }
+.lightbox p { color: #cfe0d5; text-align: center; margin: 14px 0 0; max-width: 760px; }
 .lightbox__close {
 	position: absolute;
 	top: 18px;

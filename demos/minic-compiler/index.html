@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini-C Compiler</title>
+  <meta name="description" content="A compiler for Mini-C, a small C-like language, that emits MIPS assembly and runs it on a MIPS emulator in the browser. See the tokens, the AST and the generated assembly.">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply ?theme=light / ?theme=dark before the page paints (no flash).
+    // Without the parameter, style.css follows prefers-color-scheme.
+    (function () {
+      var theme = new URLSearchParams(location.search).get('theme');
+      if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="chip-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2.5v3.5M12 2.5v3.5M15 2.5v3.5M9 18v3.5M12 18v3.5M15 18v3.5M2.5 9h3.5M2.5 12h3.5M2.5 15h3.5M18 9h3.5M18 12h3.5M18 15h3.5"/><circle cx="9" cy="9" r="0.9" fill="currentColor"/></svg>
+      </span>
+      <div>
+        <h1>Mini-C Compiler</h1>
+        <p class="subtitle">Mini-C &rarr; tokens &rarr; AST &rarr; MIPS &rarr; emulator</p>
+      </div>
+    </div>
+
+    <div class="controls" role="toolbar" aria-label="Compiler controls">
+      <label class="field">
+        <span class="sr-only">Example program</span>
+        <select id="example" aria-label="Load an example program"></select>
+      </label>
+      <div class="segmented" role="group" aria-label="Optimisation level">
+        <button type="button" data-opt="0" aria-pressed="false" title="No optimisation">-O0</button>
+        <button type="button" data-opt="1" aria-pressed="true" title="Constant folding, simplification and peephole rules">-O1</button>
+      </div>
+      <button type="button" id="btn-compile" class="btn" title="Compile (Ctrl+Enter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg><span>Compile</span>
+      </button>
+      <button type="button" id="btn-run" class="btn primary" title="Compile, assemble and run on the emulator (Ctrl+Shift+Enter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Run</span>
+      </button>
+      <a id="open-emulator" class="btn ghost" href="../mips-emulator/index.html" target="_blank" rel="noopener" title="Open the generated assembly in the MIPS emulator to step through it">
+        <span>Open in MIPS emulator</span><span aria-hidden="true">&#8599;</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="statusbar">
+    <p class="status" role="status" aria-live="polite"><span class="led" id="led" aria-hidden="true"></span><span id="status">Loading&hellip;</span></p>
+    <dl class="counters">
+      <div><dt>Asm lines</dt><dd id="stat-lines">&ndash;</dd></div>
+      <div><dt>Instructions</dt><dd id="stat-ins">&ndash;</dd></div>
+      <div><dt>Executed</dt><dd id="stat-exec">&ndash;</dd></div>
+    </dl>
+  </div>
+
+  <main class="layout">
+    <section class="panel editor-panel" aria-labelledby="editor-title">
+      <div class="panel-head">
+        <h2 id="editor-title"><span class="ref">U1</span> Source</h2>
+        <span class="hint" id="cursor-pos">Mini-C</span>
+      </div>
+      <div class="editor">
+        <div class="gutter" aria-hidden="true"><div id="gutter" class="gutter-inner"></div></div>
+        <div class="code-area">
+          <div id="line-current" class="line-marker current" hidden></div>
+          <div id="line-error" class="line-marker error" hidden></div>
+          <textarea id="source" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Mini-C source code"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel view-panel" aria-label="Compiler output">
+      <div class="panel-head tabs-head">
+        <div class="tabs" role="tablist" aria-label="Compiler stages">
+          <button type="button" role="tab" id="tab-asm" aria-controls="view-asm" aria-selected="true"><span class="ref">U2</span> Assembly</button>
+          <button type="button" role="tab" id="tab-ast" aria-controls="view-ast" aria-selected="false" tabindex="-1">AST</button>
+          <button type="button" role="tab" id="tab-tokens" aria-controls="view-tokens" aria-selected="false" tabindex="-1">Tokens</button>
+        </div>
+        <span class="hint" id="view-hint"></span>
+      </div>
+      <div class="panel-body" id="view-asm" role="tabpanel" aria-labelledby="tab-asm" tabindex="0">
+        <div class="asm" id="asm"></div>
+      </div>
+      <div class="panel-body" id="view-ast" role="tabpanel" aria-labelledby="tab-ast" tabindex="0" hidden>
+        <div class="ast-tools">
+          <div class="segmented small" role="group" aria-label="Which AST to show">
+            <button type="button" data-ast="parsed" aria-pressed="false">As parsed</button>
+            <button type="button" data-ast="optimized" aria-pressed="true">Sent to codegen</button>
+          </div>
+          <button type="button" class="link-btn" id="ast-expand">Expand all</button>
+          <button type="button" class="link-btn" id="ast-collapse">Collapse all</button>
+        </div>
+        <div class="ast" id="ast"></div>
+      </div>
+      <div class="panel-body" id="view-tokens" role="tabpanel" aria-labelledby="tab-tokens" tabindex="0" hidden>
+        <table class="tokens">
+          <thead><tr><th scope="col">Pos</th><th scope="col">Type</th><th scope="col">Text</th><th scope="col">Value</th></tr></thead>
+          <tbody id="tokens"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel output-panel" aria-labelledby="output-title">
+      <div class="panel-head">
+        <h2 id="output-title"><span class="ref">U3</span> Output</h2>
+        <span class="hint" id="output-hint">stdout &middot; diagnostics</span>
+      </div>
+      <div class="panel-body output-body">
+        <div id="diagnostics" class="diagnostics"></div>
+        <pre id="stdout" class="stdout" aria-label="Program output"></pre>
+        <p id="run-info" class="run-info"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footnote">
+    Lexer &rarr; recursive-descent parser &rarr; semantic checks &rarr; AST optimiser &rarr; MIPS code generator &rarr; peephole.
+    The generated assembly runs on the same engine as the <a href="../mips-emulator/index.html" target="_blank" rel="noopener">MIPS emulator</a>. Plain JavaScript, no dependencies.
+  </footer>
+</body>
+</html>

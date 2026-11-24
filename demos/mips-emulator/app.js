@@ -9,6 +9,8 @@
 //   ?autorun=1           assemble and run to completion on load
 //   ?steps=12            assemble and execute 12 instructions on load
 //   ?theme=light|dark    force a colour theme (handled in index.html)
+//   ?asm=<base64url>     load this UTF-8 source instead of an example (max 16 KB);
+//                        used by the Mini-C compiler's "Open in MIPS emulator" link
 
 import { assemble } from './engine/assembler.js';
 import { CPU } from './engine/cpu.js';
@@ -27,6 +29,7 @@ const EXAMPLES = [
 // Slider positions -> instructions per second.
 const SPEEDS = [1, 2, 5, 10, 25, 60, 150, 500, 2000, Infinity];
 const MAX_UI_STEPS = 5_000_000; // safety net for infinite loops
+const MAX_SHARED_BYTES = 16 * 1024; // largest program accepted through ?asm=
 
 // ---------------------------------------------------------------------------
 // DOM references
@@ -564,6 +567,35 @@ async function loadExample(id) {
   return assembleSource();
 }
 
+/** Load a program passed in the URL as ?asm=<base64url of the UTF-8 source>. */
+function loadShared(encoded) {
+  let text;
+  try {
+    if (encoded.length > Math.ceil((MAX_SHARED_BYTES * 4) / 3) + 4) throw new Error('it is larger than 16 KB');
+    const binary = atob(encoded.replace(/-/g, '+').replace(/_/g, '/'));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    if (bytes.length > MAX_SHARED_BYTES) throw new Error('it is larger than 16 KB');
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (err) {
+    let reason = err.message;
+    if (err.name === 'InvalidCharacterError') reason = 'it is not valid base64url';
+    else if (err instanceof TypeError) reason = 'it is not valid UTF-8 text';
+    const message = `Could not load the program from the link: ${reason}.`;
+    setStatus(message, 'error');
+    log(message, 'error');
+    return false;
+  }
+  const option = new Option('Program from link', '', true, true);
+  option.disabled = true; // pick an example to leave the linked program
+  el.example.prepend(option);
+  el.source.value = text.replace(/\r\n/g, '\n');
+  el.source.scrollTop = 0;
+  state.dirty = true;
+  buildGutter();
+  log(`Loaded a ${text.length.toLocaleString('en-US')}-character program from the link.`);
+  return assembleSource();
+}
+
 // ---------------------------------------------------------------------------
 // Start-up
 // ---------------------------------------------------------------------------
@@ -635,7 +667,7 @@ async function start() {
   render();
 
   const params = new URLSearchParams(location.search);
-  const ok = await loadExample(params.get('example') || 'swap');
+  const ok = params.has('asm') ? loadShared(params.get('asm')) : await loadExample(params.get('example') || 'swap');
   if (!ok) return;
 
   if (params.get('autorun') === '1') {

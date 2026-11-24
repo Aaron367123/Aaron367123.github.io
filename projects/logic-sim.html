@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Digital Logic Simulator — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: an event-driven digital logic simulator in the browser with gate delays, 0/1/X logic, reusable chips, truth tables and oscillation detection." />
+	<meta name="theme-color" content="#07110c" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<link rel="stylesheet" href="../assets/css/board.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal"><span class="kicker-ref">U6</span> Digital logic / Simulation</p>
+				<h1 class="cs-hero__title reveal">Digital Logic Simulator</h1>
+				<p class="cs-hero__summary reveal">A circuit simulator that runs in the browser. Drag gates onto the board, wire them up, flip switches and watch signals propagate one gate delay at a time. It has 0/1/X logic, flip-flops, reusable chips, truth tables, timing diagrams and detection of oscillating circuits, all built on an event-driven simulation engine I wrote from scratch.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-bolt" aria-hidden="true"></i> Build a circuit</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/logic-sim" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Engine</dt><dd>Event-driven, unit gate delay, 0/1/X logic</dd></div>
+					<div><dt>Editor</dt><dd>SVG, drag-to-wire, undo/redo, shareable links</dd></div>
+					<div><dt>Quality</dt><dd>67 tests, 0 dependencies</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: the 4-bit counter</h2>
+					<p>The counter is running. Pick another example (adders, latches, a multiplexer, a ring oscillator), drag parts from the palette, drag from one pin to another to wire, and click switches to flip them. <strong>Truth table</strong>, <strong>Timing</strong> and <strong>Package chip</strong> are in the toolbar.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/logic-sim/index.html?example=4-bit-counter&amp;run=1" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame" data-demo="../demos/logic-sim/index.html?example=4-bit-counter&amp;run=1" title="Digital logic simulator live demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#events">Event-driven simulation</a></li>
+					<li><a href="#logic">Three-valued logic</a></li>
+					<li><a href="#chips">Chips &amp; flattening</a></li>
+					<li><a href="#oscillation">Catching oscillation</a></li>
+					<li><a href="#timing">Measured timing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Digital logic is the layer just above the transistor: everything from an adder to a CPU is built from it. I built this simulator to see that layer move. Most simple simulators compute an answer instantly; this one models <em>time</em>, so you can watch a carry ripple through an adder or see a brief glitch that only exists for one gate delay.</p>
+					<div class="feature-grid">
+						<div class="feature-tile"><i class="fas fa-project-diagram"></i><h4>Parts</h4><p>Switches, buttons, clocks, AND/OR/XOR/NAND/NOR/XNOR (2–4 inputs), NOT, LEDs, probes, a 7-segment display and D flip-flops.</p></div>
+						<div class="feature-tile"><i class="fas fa-microchip"></i><h4>Chips</h4><p>Package any circuit as a reusable chip, and nest chips inside chips. Recursion is detected.</p></div>
+						<div class="feature-tile"><i class="fas fa-table"></i><h4>Analysis</h4><p>Truth tables (up to 8 inputs), gate count and longest path through the gates.</p></div>
+						<div class="feature-tile"><i class="fas fa-share-alt"></i><h4>Sharing</h4><p>Circuits are compressed into the URL (a 4-bit adder fits in 1,112 characters), or saved as versioned JSON.</p></div>
+					</div>
+				</section>
+
+				<section id="events" class="reveal">
+					<h2><span class="num">02</span> Event-driven simulation</h2>
+					<p>Re-evaluating every gate on every tick wastes time, because most of a circuit is idle most of the time. Instead, each tick applies only the wire changes scheduled for that moment, and re-evaluates only the gates those wires feed. Each gate's new output is scheduled one tick later in a 16-slot <strong>time wheel</strong>. This is how real logic simulators scale.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/simulator.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// 2. Apply this tick's events; collect the components they feed.
+const changed = [];
+const dirty = new Set();
+for (const [net, v] of bucket) {
+  if (this.values[net] === v) continue;
+  this._set(net, v, t);
+  changed.push(net);
+  for (const ci of nets[net].sinks) dirty.add(ci);
+}
+bucket.clear();
+
+// 3. Evaluate affected components; their outputs land in later buckets.
+for (const ci of dirty) this._evaluate(ci, t);
+return changed;</code></pre>
+					</div>
+					<p class="code__note">Trimmed: the statistics and event-cap bookkeeping are left out.</p>
+					<p>Because every gate takes one tick, the simulator shows real hardware effects. For example, <code>A AND (NOT A)</code> should always be 0, but when A switches from 0 to 1 the AND gate briefly sees both inputs high and outputs a one-tick spike (a glitch). A test checks for it.</p>
+				</section>
+
+				<section id="logic" class="reveal">
+					<h2><span class="num">03</span> Three-valued logic</h2>
+					<p>Real circuits power up in an unknown state. A flip-flop that hasn't been reset could hold either 0 or 1. Every wire here can be <strong>0</strong>, <strong>1</strong> or <strong>X</strong> (unknown), and each gate is defined to give the correct result even when some inputs are unknown:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/logic.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>/** AND: any 0 forces 0; otherwise any X gives X; otherwise 1. */
+export function and(ins) {
+  let unknown = false;
+  for (const v of ins) {
+    if (v === ZERO) return ZERO;
+    if (v === X) unknown = true;
+  }
+  return unknown ? X : ONE;
+}</code></pre>
+					</div>
+					<p>So <code>0 AND X</code> is 0 (one 0 is enough), but <code>1 AND X</code> stays X. Unknowns are drawn in red on the board, which makes a missing reset easy to spot.</p>
+				</section>
+
+				<section id="chips" class="reveal">
+					<h2><span class="num">04</span> Chips &amp; flattening</h2>
+					<p>The 4-bit adder is built from four full-adder <em>chips</em>, each made of gates. Before simulating, the engine <strong>flattens</strong> the design: it expands every chip into its gates, and merges each chip's pins with the wires inside it using a union-find structure. Then the simulator only ever sees plain gates and wires.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/netlist.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>for (const p of iface.inputs) uf.union(`${path}.${p.label}`, `${inner}${p.id}.out`);
+for (const p of iface.outputs) uf.union(`${path}.${p.label}`, `${inner}${p.id}.in`);
+expand(chip, [chip.chips ?? {}, ...scopes], inner, [...stack, name], false);</code></pre>
+					</div>
+					<p class="code__note">The <code>stack</code> of chip names being expanded is how a chip that contains itself is detected and rejected.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/logic-sim/adder-truth-table.jpg" alt="Full adder truth table with gate count and critical path" loading="lazy" /></button>
+							<figcaption>Truth table for the full adder, generated by trying every input, along with its 5 gates and 3-gate critical path.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="oscillation" class="reveal">
+					<h2><span class="num">05</span> Catching oscillation</h2>
+					<p>Some circuits never settle. A loop of an odd number of NOT gates (a <em>ring oscillator</em>) flips forever. A naive simulator would just hang. This one works out a bound: in a circuit without loops, every change has finished after at most the sum of all gate delays. If events are still happening long after the last input changed, the circuit must be looping.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/simulator.js · oscillation</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>else if (this.pendingEvents &gt; 0 &amp;&amp; this.time - this.lastStimulus &gt; this.settleBound) {
+  const recent = this._recentNetIdx(this.settleBound);
+  const loop = recent.filter((n) =&gt; this.loopNets.has(n));
+  const involved = loop.length ? loop : recent;
+  // Period = gap between the last two rising edges seen after the stimulus.
+  let period;
+  for (const n of involved) {
+    if (this.prevRise[n] &gt; this.lastStimulus) { period = this.lastRise[n] - this.prevRise[n]; break; }
+  }
+  value = { reason: 'oscillation', nets: involved.map((n) =&gt; this.flat.nets[n].name), period };
+}</code></pre>
+					</div>
+					<p>The wires in the loop are found ahead of time with <strong>Tarjan's strongly-connected-components algorithm</strong>, so the warning can name exactly which wires are oscillating. The 5-stage ring is correctly reported with a period of 10 ticks (5 gates × 2 transitions). A NOR latch released from S = R = 1 shows the classic period-2 race.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/logic-sim/timing-diagram.jpg" alt="Ring oscillator flagged as unstable with square waves in the timing diagram" loading="lazy" /></button>
+							<figcaption>The ring oscillator flagged UNSTABLE (5 nets, period 10), with its square waves in the timing diagram.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="timing" class="reveal">
+					<h2><span class="num">06</span> Measured timing</h2>
+					<p>Because gate delay is modelled, the simulator can measure a known weakness of ripple-carry adders: the carry has to pass through every bit in turn, so the delay grows with the width:</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Ripple-carry adder</th><th>Carry-in → carry-out</th><th>Critical path</th><th>Gates</th></tr></thead>
+							<tbody>
+								<tr><td>1-bit</td><td>2 ticks</td><td>3</td><td>5</td></tr>
+								<tr><td>2-bit</td><td>4 ticks</td><td>5</td><td>10</td></tr>
+								<tr><td>4-bit</td><td>8 ticks</td><td>9</td><td>20</td></tr>
+								<tr><td>8-bit</td><td>16 ticks</td><td>17</td><td>40</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>The delay grows linearly: 2 gate delays per bit. That's exactly why real CPUs use carry-lookahead adders, which would make a good next example.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/logic-sim/counter-running.jpg" alt="4-bit counter running with a 7-segment display" loading="lazy" /></button>
+							<figcaption>The synchronous 4-bit counter: high signals glow green, and the display shows the count in hex.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/logic-sim/mobile.jpg" alt="Logic simulator on a phone with the parts palette as a bottom sheet" loading="lazy" /></button>
+							<figcaption>On a phone, the parts palette becomes a bottom sheet and touch works.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Modelling time changes everything: glitches, races and propagation delay only appear once gates take time to switch.</li>
+						<li>An "unknown" value (X) is honest. It shows uninitialised state instead of hiding it behind a default 0.</li>
+						<li>Graph algorithms show up in unexpected places: union-find for flattening chips and Tarjan's algorithm for finding loops.</li>
+						<li>Limitations and next steps: different rise and fall delays, tri-state buses, setup/hold checks on flip-flops, and component rotation for tidier wiring.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="c-http-server.html"><small>← Previous</small><strong>tinyhttpd: HTTP Server in C</strong></a>
+			<a href="pid-lab.html"><small>Next →</small><strong>PID Control Lab</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

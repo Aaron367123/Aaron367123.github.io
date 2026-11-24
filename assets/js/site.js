@@ -105,6 +105,76 @@
 		counters.forEach(function (el) { countObserver.observe(el); });
 	}
 
+	/* ---------- Scroll bus: copper trace fills with scroll, vias light up per section ---------- */
+	var bus = document.querySelector('.bus');
+	if (bus) {
+		var busVias = Array.prototype.slice.call(bus.querySelectorAll('.bus__via'));
+		var busTargets = busVias.map(function (v) { return document.getElementById(v.getAttribute('data-target')); });
+
+		// Place each via at its section's position as a fraction of the scrollable height,
+		// so the fill reaches a via exactly when its section reaches the top of the screen.
+		var layoutBus = function () {
+			var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+			busVias.forEach(function (v, i) {
+				var el = busTargets[i];
+				var y = el ? Math.min(el.getBoundingClientRect().top + window.scrollY - 80, max) : 0;
+				v.style.setProperty('--via-pos', Math.max(0, (y / max) * 100) + '%');
+				v.dataset.y = Math.max(0, y);
+			});
+		};
+		var updateBus = function () {
+			var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+			var p = Math.min(1, window.scrollY / max);
+			bus.style.setProperty('--bus-progress', (p * 100) + '%');
+			var current = -1;
+			busVias.forEach(function (v, i) {
+				var lit = window.scrollY + 2 >= +v.dataset.y;
+				v.classList.toggle('is-lit', lit);
+				if (lit) current = i;
+			});
+			busVias.forEach(function (v, i) { v.classList.toggle('is-current', i === current); });
+		};
+		layoutBus();
+		updateBus();
+		window.addEventListener('scroll', updateBus, { passive: true });
+		window.addEventListener('resize', function () { layoutBus(); updateBus(); });
+		window.addEventListener('load', function () { layoutBus(); updateBus(); });
+	}
+
+	/* ---------- DIP-switch project filter (one switch on at a time) ---------- */
+	var dip = document.querySelector('.dip');
+	if (dip) {
+		var switches = Array.prototype.slice.call(dip.querySelectorAll('.dip__switch'));
+		var filterCards = Array.prototype.slice.call(document.querySelectorAll('.cards .card[data-cat]'));
+		switches.forEach(function (sw) {
+			sw.addEventListener('click', function () {
+				var f = sw.getAttribute('data-filter');
+				switches.forEach(function (s) {
+					var on = s === sw;
+					s.classList.toggle('is-on', on);
+					s.setAttribute('aria-pressed', String(on));
+				});
+				filterCards.forEach(function (c) {
+					var cats = (c.getAttribute('data-cat') || '').split(' ');
+					var show = f === 'all' || cats.indexOf(f) !== -1;
+					c.classList.toggle('is-filtered-out', !show);
+					if (show) c.classList.add('is-visible'); // filtered-in cards skip the reveal animation
+				});
+			});
+		});
+	}
+
+	/* ---------- Copper glow that follows the mouse across cards ---------- */
+	if (window.matchMedia('(hover: hover)').matches) {
+		document.querySelectorAll('.card, .skill-card').forEach(function (el) {
+			el.addEventListener('pointermove', function (e) {
+				var r = el.getBoundingClientRect();
+				el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+				el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+			});
+		});
+	}
+
 	/* ---------- Case study: TOC highlight ---------- */
 	var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.cs-toc a'));
 	if (tocLinks.length && 'IntersectionObserver' in window) {
@@ -183,10 +253,11 @@
 	var typed = document.getElementById('typed');
 	var phrases = [
 		'IoT devices.',
-		'computer vision models.',
-		'multithreaded servers.',
-		'low-level software in C.',
-		'data dashboards.'
+		'CPU emulators.',
+		'compilers.',
+		'HTTP servers in C.',
+		'neural networks.',
+		'control systems.'
 	];
 	if (typed && !reduceMotion) {
 		var p = 0, c = 0, deleting = false;

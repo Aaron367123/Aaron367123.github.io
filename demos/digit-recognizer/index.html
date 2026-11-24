@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digit Recognizer — a neural network from scratch</title>
+  <meta name="description" content="Draw a digit and watch a neural network written from scratch in JavaScript (no ML libraries) recognise it, neuron by neuron.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Theme before first paint: ?theme=light|dark wins, otherwise the OS preference (CSS media query).
+    (function () {
+      var t = new URLSearchParams(location.search).get('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="7" y="7" width="18" height="18" rx="2.5"/>
+          <path d="M11 3v4M16 3v4M21 3v4M11 25v4M16 25v4M21 25v4M3 11h4M3 16h4M3 21h4M25 11h4M25 16h4M25 21h4"/>
+          <path class="logo-net" d="M12 12l8 4-8 4M12 12v8M20 16"/>
+        </svg>
+        <div>
+          <h1>Digit Recognizer</h1>
+          <p class="sub">A neural network written from scratch · running in your browser</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="chip mono" id="arch-chip">MLP 784-256-128-10</span>
+        <button type="button" class="icon-btn" id="theme-btn" aria-label="Toggle light/dark theme" title="Toggle theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="board">
+      <section class="module m-pad" aria-labelledby="pad-label">
+        <div class="silk"><span class="ref">U1</span><span id="pad-label">Input pad</span><span class="silk-r mono" id="pad-res">draw 0–9</span></div>
+        <div class="lcd">
+          <canvas id="pad" width="448" height="448" aria-label="Drawing pad: draw a digit with mouse, finger or pen"></canvas>
+          <div class="lcd-hint" id="pad-hint">Draw a digit here</div>
+          <i class="screw tl"></i><i class="screw tr"></i><i class="screw bl"></i><i class="screw br"></i>
+        </div>
+        <div class="controls">
+          <button type="button" id="undo-btn" class="btn" disabled>Undo stroke</button>
+          <button type="button" id="clear-btn" class="btn" disabled>Clear</button>
+          <button type="button" id="sample-btn" class="btn primary">Try a test image</button>
+        </div>
+        <p class="sample-info mono" id="sample-info" aria-live="polite"></p>
+      </section>
+
+      <section class="module m-seen" aria-labelledby="seen-label">
+        <div class="silk"><span class="ref">U2</span><span id="seen-label">What the network sees</span><span class="silk-r mono">28×28</span></div>
+        <div class="seen-row">
+          <canvas id="seen" width="280" height="280" aria-label="The 28 by 28 preprocessed input"></canvas>
+          <div class="verdict">
+            <div class="verdict-label mono">Prediction</div>
+            <div class="verdict-digit mono" id="pred">–</div>
+            <div class="verdict-conf mono" id="conf">waiting for input</div>
+          </div>
+        </div>
+        <p class="note" id="seen-note">Cropped, stroke width matched, scaled to 20 px and centred by centre of mass: the recipe used to build MNIST.</p>
+      </section>
+
+      <section class="module m-probs" aria-labelledby="probs-label">
+        <div class="silk"><span class="ref">U3</span><span id="probs-label">Output · softmax</span><span class="silk-r mono">P(digit)</span></div>
+        <ol class="bars" id="bars"></ol>
+      </section>
+
+      <section class="module m-net" aria-labelledby="net-label">
+        <div class="silk"><span class="ref">U4</span><span id="net-label">Network activity</span><span class="silk-r mono" id="net-arch">784 → 256 → 128 → 10</span></div>
+        <div class="net-wrap"><canvas id="net" aria-label="Visualisation of neuron activations"></canvas></div>
+        <p class="note">Columns are layers; each pad is a neuron and its glow is its activation (32 of the 256 and 32 of the 128 hidden neurons are shown — the ones with the largest outgoing weights). Traces light up along the strongest contributions to the winning output.</p>
+      </section>
+    </main>
+
+    <footer class="stats mono" id="stats">
+      <div><span class="k">Test accuracy</span><span class="v" id="s-acc">–</span></div>
+      <div><span class="k">Parameters</span><span class="v" id="s-params">–</span></div>
+      <div><span class="k">Model</span><span class="v" id="s-size">–</span></div>
+      <div><span class="k">Inference</span><span class="v" id="s-ms">–</span></div>
+      <div class="foot-note">No ML libraries: matrix maths, backprop, Adam and int8 quantisation all hand-written in JavaScript.</div>
+    </footer>
+  </div>
+  <noscript><p class="noscript">This demo needs JavaScript (ES modules).</p></noscript>
+</body>
+</html>

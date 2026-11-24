@@ -1,0 +1,208 @@
+/* Digit Recognizer — circuit-board theme.
+   Dark is the default; light via ?theme=light or the OS preference. */
+
+:root {
+  --bg: #07110c;
+  --bg-alt: #0a1711;
+  --surface: #0e1d16;
+  --surface-2: #13261d;
+  --border: rgba(196, 228, 208, 0.10);
+  --border-strong: rgba(196, 228, 208, 0.20);
+  --text: #e8f0ea;
+  --muted: #9fb5a8;
+  --faint: #6f8679;
+  --copper: #e0a458;
+  --copper-bright: #f7c886;
+  --led: #3ee08f;
+  --signal: #4fd1c5;
+  --warn: #ffcc66;
+  --danger: #ff6b5e;
+
+  --lcd-bg: #0a1a12;
+  --lcd-ink: #e8f0ea;
+  --lcd-dot: rgba(62, 224, 143, 0.07);
+  --glow: 0 0 18px rgba(62, 224, 143, 0.35);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'IBM Plex Mono', Consolas, 'SFMono-Regular', Menlo, monospace;
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f1e8; --bg-alt: #ece7d9; --surface: #fffdf6; --surface-2: #f0ebdc;
+    --border: rgba(20, 35, 27, 0.12); --border-strong: rgba(20, 35, 27, 0.22);
+    --text: #14231b; --muted: #4d5f55; --faint: #7a8a80;
+    --copper: #b06a26; --copper-bright: #c98a3e; --led: #138a4b; --signal: #0f7f75;
+    --warn: #9a6400; --danger: #c0392b;
+    --lcd-bg: #e6e3d6; --lcd-ink: #14231b; --lcd-dot: rgba(20, 35, 27, 0.06);
+    --glow: none; --shadow: 0 1px 2px rgba(20, 35, 27, 0.06), 0 8px 24px rgba(20, 35, 27, 0.07);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f4f1e8; --bg-alt: #ece7d9; --surface: #fffdf6; --surface-2: #f0ebdc;
+  --border: rgba(20, 35, 27, 0.12); --border-strong: rgba(20, 35, 27, 0.22);
+  --text: #14231b; --muted: #4d5f55; --faint: #7a8a80;
+  --copper: #b06a26; --copper-bright: #c98a3e; --led: #138a4b; --signal: #0f7f75;
+  --warn: #9a6400; --danger: #c0392b;
+  --lcd-bg: #e6e3d6; --lcd-ink: #14231b; --lcd-dot: rgba(20, 35, 27, 0.06);
+  --glow: none; --shadow: 0 1px 2px rgba(20, 35, 27, 0.06), 0 8px 24px rgba(20, 35, 27, 0.07);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background-color: var(--bg);
+  /* faint solder-mask grid */
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  color: var(--text);
+  font: 15px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: var(--mono); }
+button { font: inherit; color: inherit; }
+
+.app { max-width: 1280px; margin: 0 auto; padding: 18px 20px 24px; }
+
+/* ---------------------------------------------------------------- top bar */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 40px; height: 40px; flex: none; fill: none; stroke: var(--copper); stroke-width: 1.6; stroke-linecap: round; }
+.logo rect { fill: var(--surface-2); }
+.logo .logo-net { stroke: var(--led); stroke-width: 1.8; }
+h1 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; }
+.sub { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.chip {
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--copper);
+  border: 1px solid var(--border-strong); border-radius: 999px; padding: 4px 10px; white-space: nowrap;
+}
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border-strong);
+  background: var(--surface); display: grid; place-items: center; cursor: pointer;
+}
+.icon-btn svg { width: 17px; height: 17px; fill: var(--muted); }
+.icon-btn:hover svg { fill: var(--copper-bright); }
+
+/* ---------------------------------------------------------------- board layout */
+.board {
+  display: grid; gap: 16px;
+  grid-template-columns: minmax(300px, 1.05fr) minmax(260px, 1fr) minmax(250px, 0.9fr);
+  grid-template-areas: "pad seen probs" "net net net";
+}
+.m-pad { grid-area: pad; } .m-seen { grid-area: seen; } .m-probs { grid-area: probs; } .m-net { grid-area: net; }
+
+@media (max-width: 1060px) {
+  .board { grid-template-columns: 1fr 1fr; grid-template-areas: "pad seen" "pad probs" "net net"; }
+}
+@media (max-width: 680px) {
+  .app { padding: 14px 16px 20px; }
+  .board { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pad" "seen" "probs" "net"; gap: 12px; }
+  .sub { font-size: 0.78rem; }
+  #arch-chip, #net-arch { display: none; }
+}
+
+/* ---------------------------------------------------------------- modules (chips on the board) */
+.module {
+  position: relative; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px 16px; box-shadow: var(--shadow); min-width: 0;
+}
+.module::before, .module::after { /* copper pads in the corners */
+  content: ""; position: absolute; width: 7px; height: 7px; border-radius: 2px;
+  background: var(--copper); opacity: 0.55; top: 9px;
+}
+.module::before { left: 9px; } .module::after { right: 9px; }
+.silk {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 12px 14px; padding-right: 16px;
+  font: 600 0.7rem/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.silk .ref { color: var(--copper); }
+.silk-r { margin-left: auto; color: var(--faint); font-weight: 500; }
+.note { margin: 12px 0 0; color: var(--muted); font-size: 0.8rem; }
+
+/* ---------------------------------------------------------------- U1 drawing pad (LCD module) */
+.lcd {
+  position: relative; width: 100%; max-width: 330px; margin: 0 auto; aspect-ratio: 1;
+  border-radius: 12px; padding: 12px; background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+}
+.lcd canvas {
+  display: block; width: 100%; height: 100%; border-radius: 6px; cursor: crosshair; touch-action: none;
+  background-color: var(--lcd-bg);
+  background-image: radial-gradient(circle at 50% 50%, var(--lcd-dot) 1px, transparent 1.4px);
+  background-size: 8px 8px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--border);
+}
+.lcd-hint {
+  position: absolute; inset: 12px; display: grid; place-items: center; pointer-events: none;
+  font: 500 0.78rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint);
+  transition: opacity 0.2s;
+}
+.lcd-hint.hidden { opacity: 0; }
+.screw { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); }
+.screw.tl { top: 3px; left: 3px; } .screw.tr { top: 3px; right: 3px; } .screw.bl { bottom: 3px; left: 3px; } .screw.br { bottom: 3px; right: 3px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.btn {
+  border: 1px solid var(--border-strong); background: var(--surface-2); border-radius: 9px;
+  padding: 8px 14px; font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.btn:hover:not(:disabled) { border-color: var(--copper); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { border-color: var(--copper); color: var(--copper-bright); background: transparent; }
+:root[data-theme="light"] .btn.primary { color: var(--copper); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: var(--copper); } }
+.btn:focus-visible, .icon-btn:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.sample-info { min-height: 1.4em; margin: 10px 0 0; text-align: center; font-size: 0.78rem; color: var(--muted); }
+.sample-info .ok { color: var(--led); } .sample-info .bad { color: var(--danger); }
+
+/* ---------------------------------------------------------------- U2 what the network sees */
+.seen-row { display: flex; gap: 16px; align-items: center; flex: 1; }
+#seen {
+  width: 58%; max-width: 230px; aspect-ratio: 1; display: block; border-radius: 6px;
+  background: var(--bg-alt); border: 1px solid var(--border);
+}
+.verdict { flex: 1; text-align: center; min-width: 0; }
+.verdict-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+.verdict-digit {
+  font-size: clamp(4rem, 9vw, 6.2rem); line-height: 1; font-weight: 600; color: var(--led);
+  text-shadow: var(--glow); margin: 4px 0 6px;
+}
+.verdict-digit.idle { color: var(--faint); text-shadow: none; }
+.verdict-conf { font-size: 0.78rem; color: var(--muted); }
+
+/* ---------------------------------------------------------------- U3 probability bars */
+.m-probs, .m-seen { display: flex; flex-direction: column; }
+.bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; flex: 1; align-content: space-evenly; }
+.bars li { display: grid; grid-template-columns: 1.2em 1fr 4.2em; align-items: center; gap: 10px; font-family: var(--mono); font-size: 0.85rem; }
+.bars .d { color: var(--muted); text-align: center; }
+.bars .track { display: block; height: 14px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+.bars .fill { display: block; height: 100%; width: 0; background: var(--copper); opacity: 0.75; transition: width 0.18s ease-out; }
+.bars .p { text-align: right; color: var(--faint); font-size: 0.78rem; }
+.bars li.top .d, .bars li.top .p { color: var(--led); }
+.bars li.top .fill { background: var(--led); opacity: 1; box-shadow: var(--glow); }
+
+/* ---------------------------------------------------------------- U4 network */
+.net-wrap { position: relative; width: 100%; height: 400px; }
+#net { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (max-width: 680px) { .net-wrap { height: 340px; } }
+
+/* ---------------------------------------------------------------- stats footer */
+.stats {
+  display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: baseline; margin-top: 16px; padding: 12px 16px;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius); font-size: 0.78rem;
+}
+.stats .k { color: var(--faint); letter-spacing: 0.12em; text-transform: uppercase; margin-right: 8px; font-size: 0.68rem; }
+.stats .v { color: var(--copper-bright); }
+:root[data-theme="light"] .stats .v { color: var(--copper); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .stats .v { color: var(--copper); } }
+.stats .foot-note { flex-basis: 100%; color: var(--muted); font-family: var(--sans); font-size: 0.78rem; }
+.noscript { text-align: center; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

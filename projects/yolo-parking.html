@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Parking Detection with YOLOv8 — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: training a YOLOv8 object-detection model to find free and occupied parking spaces from aerial images." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Computer vision / Machine learning</p>
+				<h1 class="cs-hero__title reveal">Parking Detection with YOLOv8</h1>
+				<p class="cs-hero__summary reveal">An object-detection model that looks at an aerial photo of a parking lot and marks every space as free or taken. I trained YOLOv8 on a labelled dataset in Google Colab, measured how accurate it was, and tested it on new images it had never seen.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/ParkingYolov8-main" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Date</dt><dd>April 2024</dd></div>
+					<div><dt>Model</dt><dd>Ultralytics YOLOv8 (11.1 M parameters)</dd></div>
+					<div><dt>Stack</dt><dd>Python, PyTorch, Google Colab (T4 GPU), Roboflow</dd></div>
+				</dl>
+				<figure class="cs-cover reveal">
+					<img src="../images/projects/yolo/annotated-2.jpg" alt="Aerial view of a parking lot with bounding boxes drawn around cars and empty spaces" width="713" height="711" style="object-position: center 40%;" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#data">The dataset</a></li>
+					<li><a href="#training">Training</a></li>
+					<li><a href="#results">Results</a></li>
+					<li><a href="#testing">Testing on new images</a></li>
+					<li><a href="#learned">Takeaways</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Finding a free spot in a big lot wastes time and fuel. A camera above the lot plus an object detector can count free spaces automatically and feed a sign or an app. This project was my first hands-on run through the full computer-vision workflow:</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-images"></i><strong>Dataset</strong><span>Labelled aerial images from Roboflow</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-brain"></i><strong>Train</strong><span>YOLOv8, 25 epochs on a T4 GPU</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-chart-line"></i><strong>Validate</strong><span>Precision, recall, mAP, confusion matrix</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-search"></i><strong>Predict</strong><span>Run on unseen lot images</span></div>
+					</div>
+				</section>
+
+				<section id="data" class="reveal">
+					<h2><span class="num">02</span> The dataset</h2>
+					<p>I started from the open <strong>Parking Lot Availability</strong> dataset on Roboflow Universe and copied it into my own Roboflow project. This version has <strong>135 images</strong> and <strong>two classes</strong>: empty spaces and spaces with a car in them. Roboflow handled the train/validation/test split and exported the data in YOLOv8 format.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/yolo/annotated.jpg" alt="Labelled training image: cars boxed in one colour, empty spaces in another" loading="lazy" /></button>
+							<figcaption>A labelled training image: cars and empty spaces have different box colours.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/yolo/annotated-2.jpg" alt="Second labelled training image of a parking lot" loading="lazy" /></button>
+							<figcaption>A second lot with a different layout, to check the model isn't just memorising one lot.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="training" class="reveal">
+					<h2><span class="num">03</span> Training</h2>
+					<p>I trained in <strong>Google Colab</strong> on a free Tesla T4 GPU, using Roboflow's "train YOLOv8 on a custom dataset" notebook. The notebook fine-tunes a model that was already trained on a general dataset (transfer learning), which is why such a small dataset could still reach good accuracy.</p>
+					<div class="metrics">
+						<div class="metric"><b>25</b><span>epochs</span></div>
+						<div class="metric"><b>800 px</b><span>input image size</span></div>
+						<div class="metric"><b>~6 min</b><span>total training time (0.098 h)</span></div>
+						<div class="metric"><b>22.5 MB</b><span>size of the best weights file</span></div>
+					</div>
+					<p>Software: Ultralytics 8.0.196, PyTorch 2.2.1 with CUDA 12.1, Python 3.10. The trained network has 168 layers, 11.1 M parameters and 28.4 GFLOPs, which matches the small (<code>s</code>) YOLOv8 model.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/yolo/results.jpg" alt="Training curves: box, class and DFL losses falling; precision, recall and mAP rising over 25 epochs" loading="lazy" /></button>
+							<figcaption>Training curves: loss goes down and precision, recall and mAP go up over the 25 epochs.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="results" class="reveal">
+					<h2><span class="num">04</span> Results</h2>
+					<p>I checked the best weights against the validation set (85 labelled objects):</p>
+					<div class="metrics">
+						<div class="metric"><b>89.4%</b><span>mAP@50, both classes</span></div>
+						<div class="metric"><b>91.3%</b><span>precision</span></div>
+						<div class="metric"><b>82.4%</b><span>recall</span></div>
+						<div class="metric"><b>6.2 ms</b><span>inference per image</span></div>
+					</div>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Class</th><th>Instances</th><th>Precision</th><th>Recall</th><th>mAP@50</th><th>mAP@50-95</th></tr></thead>
+							<tbody>
+								<tr><td>Empty space</td><td>35</td><td>0.932</td><td>0.788</td><td>0.869</td><td>0.234</td></tr>
+								<tr><td>Occupied space</td><td>50</td><td>0.893</td><td>0.860</td><td>0.918</td><td>0.405</td></tr>
+								<tr><td>All</td><td>85</td><td>0.913</td><td>0.824</td><td>0.894</td><td>0.319</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>For comparison, Roboflow's own hosted "Fast" model on the same data scored <strong>76.2% mAP</strong>, so the YOLOv8 model I trained did noticeably better.</p>
+					<div class="callout"><i class="fas fa-info-circle" aria-hidden="true"></i><p>mAP@50 is high but mAP@50-95 is much lower. The model finds the spaces reliably, but its boxes don't line up tightly with the edges. That's acceptable for counting free spaces, but a bigger dataset would be needed for precise outlines.</p></div>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/yolo/confusion.jpg" alt="Confusion matrix for the two parking classes and background" loading="lazy" /></button>
+							<figcaption>Confusion matrix: most mistakes are missed spaces (counted as background), not mixing up the two classes.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/yolo/val-batch.jpg" alt="Grid of four validation images with predicted boxes" loading="lazy" /></button>
+							<figcaption>The model's predictions on validation images.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">05</span> Testing on new images</h2>
+					<p>The real test is a lot the model has never seen. I ran it on new, unlabelled aerial photos and recorded a short demo video for the presentation.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/yolo/test-1.jpg" alt="Prediction on an unseen parking lot image with confidence scores" loading="lazy" /></button>
+							<figcaption>Predictions on an unseen lot, with confidence scores.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/yolo/test-2.jpg" alt="Prediction on a second unseen parking lot image" loading="lazy" /></button>
+							<figcaption>A second unseen test image.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">06</span> Takeaways</h2>
+					<ul class="cs-list">
+						<li>Transfer learning makes small datasets workable: 135 images and about six minutes of GPU time gave almost 90% mAP@50.</li>
+						<li>How to read detection metrics: what precision vs. recall means for a parking app, and why mAP@50 and mAP@50-95 tell different stories.</li>
+						<li>Data quality matters more than settings. The class names exported from the dataset were confusing, and cleaning up labels is the first thing I'd do next.</li>
+						<li>Next steps: more images (night, rain, different camera angles), a larger YOLOv8 model, and a live count of free spaces from a video feed.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="music-website.html"><small>← Previous</small><strong>Myousik 2.0</strong></a>
+			<a href="pet-monitor.html"><small>Next →</small><strong>Smart Pet Monitor (capstone)</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Multithreaded TCP Command Server — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a Java TCP command server that went from single-threaded to a thread pool, deployed as a systemd service on Linux." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Networking / Systems / Java</p>
+				<h1 class="cs-hero__title reveal">Multithreaded TCP Command Server</h1>
+				<p class="cs-hero__summary reveal">A Java server that accepts telnet connections and runs text commands: word count, time lookup, file inspection and dictionary lookups. It started as a single-threaded, local-only program and grew into a networked server that handles several clients at once with a thread pool, running as a <code>systemd</code> service on Linux.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/CmdServer" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Date</dt><dd>December 2023</dd></div>
+					<div><dt>Environment</dt><dd>Linux VM (GNOME), JDK 11, NetBeans</dd></div>
+					<div><dt>Stack</dt><dd>Java sockets, ExecutorService, systemd, C, telnet</dd></div>
+				</dl>
+				<figure class="cs-cover reveal" style="background:#fff">
+					<img src="../images/projects/cmd-server/multithreaded-3-clients.jpg" alt="Three telnet terminals connected to the server at once, each served by its own thread: Client1, Client2 and Client3" width="1013" height="359" style="object-fit:contain" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container" style="padding-top:40px">
+			<div class="callout reveal" style="margin:0"><i class="fas fa-rocket" aria-hidden="true"></i><p><strong>Where this led.</strong> I took these ideas further in <a href="c-http-server.html" style="color:var(--accent-2)">tinyhttpd</a>: an HTTP/1.1 server written from scratch in C, with a bounded work queue, back-pressure and measured benchmarks.</p></div>
+		</div>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#commands">Commands</a></li>
+					<li><a href="#evolution">Single → multi-threaded</a></li>
+					<li><a href="#code">Inside the code</a></li>
+					<li><a href="#deploy">Running it as a service</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">Improvements &amp; lessons</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>The goal was to understand what's under every network service: a socket, a simple text protocol, a way to handle many clients at once, and an operating system that keeps it running. The server listens on <strong>TCP port 40057</strong>. Clients connect with <code>telnet</code>, type a command and get a one-line reply.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-terminal"></i><strong>Client</strong><span>telnet host 40057</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-plug"></i><strong>ServerSocket</strong><span>accept() new connection</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-users-cog"></i><strong>Thread pool</strong><span>Worker "ClientN" handles the session</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-code-branch"></i><strong>Dispatch</strong><span>Parse line, run command, reply</span></div>
+					</div>
+				</section>
+
+				<section id="commands" class="reveal">
+					<h2><span class="num">02</span> Commands</h2>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Command</th><th>What it does</th></tr></thead>
+							<tbody>
+								<tr><td><code>help</code></td><td>Lists the available commands.</td></tr>
+								<tr><td><code>count &lt;text&gt;</code></td><td>Counts the words in the text (splits on whitespace).</td></tr>
+								<tr><td><code>time</code></td><td>Opens its own socket to the system <strong>daytime</strong> service on port 13 and returns its reply.</td></tr>
+								<tr><td><code>file &lt;name&gt;</code></td><td>Checks a file in the user's home directory: whether it exists, read/write/execute permissions, file or directory, and size.</td></tr>
+								<tr><td><code>dict &lt;word&gt;</code></td><td>Runs the Linux <code>dict</code> program and returns the definitions it finds.</td></tr>
+								<tr><td><code>Quit</code></td><td>Closes the session.</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/cmd-server/dict-command-output.jpg" alt="Output of the dict command showing definitions of the word bye" loading="lazy" /></button>
+							<figcaption><code>dict bye</code> returns definitions from the dictionary server.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/cmd-server/file-command-output.jpg" alt="Output of the file command for a regular file, a directory and a missing file" loading="lazy" /></button>
+							<figcaption><code>file</code> on a regular file, a directory and a file that doesn't exist.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="evolution" class="reveal">
+					<h2><span class="num">03</span> From single-threaded to multithreaded</h2>
+					<h3>Version 1: single-threaded, local only</h3>
+					<p>The first version had no networking. It read commands from the console in a loop and dispatched them, with every command stubbed out ("not implemented"). This settled the parsing and dispatch structure before sockets and threads were added.</p>
+					<h3>Version 2: networked, with a thread pool</h3>
+					<p>The final version listens on a <code>ServerSocket</code> and gives each accepted connection to a <strong>fixed pool of 3 worker threads</strong> from <code>ExecutorService</code>. A pool limits how many threads can exist at once, so a flood of connections can't overload the machine the way "one new thread per client" could.</p>
+					<p>To make the concurrency visible, each worker renames itself <code>Client1</code>, <code>Client2</code>, … using a <code>synchronized</code> counter, so two threads can never get the same number. Each worker then tells its client which thread and port it's using.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/cmd-server/stub-commands-run.jpg" alt="Console run of the single-threaded version where each command prints not implemented" loading="lazy" /></button>
+							<figcaption>Version 1: the console loop with stubbed commands.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/cmd-server/multithreaded-3-clients.jpg" alt="Three telnet clients served by threads Client1, Client2 and Client3" loading="lazy" /></button>
+							<figcaption>Version 2: three clients at once, each on its own thread and port.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="code" class="reveal">
+					<h2><span class="num">04</span> Inside the code</h2>
+					<p>The accept loop gives each connection to the pool. The client number is read on the accepting thread, so each worker gets a unique ID:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>CmdServer/CmdServer1.java</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>public synchronized int getNextClientCount(){
+    return clientCount++;
+}
+public void startServer(int port) {
+    ExecutorService threadPool = Executors.newFixedThreadPool(3);
+    try {
+        ServerSocket serverSocket = new ServerSocket(port);
+        System.out.println("Server is running and waiting for connections...");
+
+        while (true) {
+            Socket clientSocket = serverSocket.accept();
+            System.out.println("New client connected.");
+            final int currentClient = getNextClientCount();
+            threadPool.submit(() -&gt; {
+                Thread.currentThread().setName("Client" + currentClient);
+                handleClient(clientSocket);
+            });
+        }</code></pre>
+					</div>
+					<p>Inside each session, a line is split into a command and its arguments and dispatched with a <code>switch</code>:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>CmdServer/CmdServer1.java · handleClient()</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>String[] tokens = commandLine.split("\\s+");
+String command = tokens[0];
+String[] commandArgs = new String[tokens.length - 1];
+System.arraycopy(tokens, 1, commandArgs, 0, tokens.length - 1);
+
+String result;
+switch (command) {
+    case "help":  result = help(commandArgs);  break;
+    case "count": result = count(commandArgs); break;
+    case "time":  result = time(commandArgs);  break;
+    case "file":  result = file(commandArgs);  break;
+    case "dict":  result = dict(commandArgs);  break;
+    default:      result = "no such command";
+}
+outputStream.write(result.getBytes());
+outputStream.write('\n');
+outputStream.flush();</code></pre>
+					</div>
+					<p class="code__note">Each <code>case</code> was originally on several lines; here they're shortened to one line each.</p>
+				</section>
+
+				<section id="deploy" class="reveal">
+					<h2><span class="num">05</span> Running it as a Linux service</h2>
+					<p>A server that only runs while someone has an IDE open isn't really a server. I packaged it as a <code>.jar</code> and set it up with <strong>systemd</strong>:</p>
+					<ul class="cs-list">
+						<li>A <code>.service</code> unit runs the jar and sends its output to the system log (<code>syslog</code>).</li>
+						<li>A matching <code>.socket</code> unit declares the server's port (<code>ListenStream=40057</code>) and is enabled under <code>sockets.target</code>.</li>
+						<li>I changed the system's <strong>daytime</strong> service to run a small C program I wrote. It sets <code>TZ=Asia/Tokyo</code> and replaces itself with <code>/bin/date</code> using <code>execl</code>, so the server's <code>time</code> command returns Tokyo time.</li>
+					</ul>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>daytime_japan.c</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(){
+    setenv("TZ", "Asia/Tokyo", 1);
+    execl("/bin/date", "date", (char *)NULL);
+    perror("execl");
+    return 1;
+}</code></pre>
+					</div>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/cmd-server/systemd-status-telnet-test.jpg" alt="systemctl status output showing the service active, next to telnet sessions talking to it" loading="lazy" /></button>
+							<figcaption><code>systemctl status</code> shows the service running, while telnet clients connect to it over the network.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">06</span> Testing</h2>
+					<ul class="cs-list">
+						<li><strong>Concurrency:</strong> three telnet clients connected at once and were given threads Client1–3 on separate ports.</li>
+						<li><strong>count:</strong> <code>count hello World</code> → <code>Word count: 2</code>.</li>
+						<li><strong>time:</strong> returned Tokyo time from the modified daytime service (<code>… JST 2023</code>).</li>
+						<li><strong>file:</strong> correct details for a regular file and a directory, and a clear "File does not exist." for a missing file.</li>
+						<li><strong>Service:</strong> connected to the systemd-managed server by the VM's IP address, not just <code>localhost</code>.</li>
+					</ul>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> Improvements &amp; lessons</h2>
+					<p>Looking back at the code, here's what I'd change:</p>
+					<ul class="cs-list">
+						<li><strong>Handle a client that disconnects without saying Quit.</strong> <code>readLine()</code> returns <code>null</code> at end of stream, so the loop should check for that before calling <code>equalsIgnoreCase</code>.</li>
+						<li><strong>Close sockets automatically.</strong> Using <code>try-with-resources</code> closes the socket even when an error happens.</li>
+						<li><strong>Allow more clients, or queue them visibly.</strong> With 3 workers, a 4th client waits silently. A larger or configurable pool, or a "server busy" message, would be friendlier.</li>
+						<li><strong>Restrict the <code>file</code> command</strong> to a safe directory so <code>../</code> can't reach outside it, and check the word passed to <code>dict</code> before running the program.</li>
+					</ul>
+					<div class="callout"><i class="fas fa-lightbulb" aria-hidden="true"></i><p>Biggest takeaway: concurrency bugs usually come from shared state. Keeping the only shared value, the client counter, behind one <code>synchronized</code> method made the multithreaded version easy to reason about.</p></div>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="pet-monitor.html"><small>← Previous</small><strong>Smart Pet Monitor (capstone)</strong></a>
+			<a href="nba-data.html"><small>Next →</small><strong>NBA Rookie Data Analysis</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

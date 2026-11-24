@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Pet Monitor Live — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a real-time IoT dashboard with WebSockets, sensor calibration, alerting with hysteresis and visit detection, built on a Raspberry Pi capstone." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · IoT / Real-time systems</p>
+				<h1 class="cs-hero__title reveal">Pet Monitor Live</h1>
+				<p class="cs-hero__summary reveal">The software my <a href="pet-monitor.html">Smart Pet Monitor capstone</a> was missing. Sensor readings go into an API that calibrates them into real units (grams, pH), detects when the pet visits the bowl, raises alerts without false alarms, stores history, and streams everything to a live dashboard over WebSockets.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-play" aria-hidden="true"></i> See it live</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/pet-monitor-live" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo, extending a 4-person capstone</dd></div>
+					<div><dt>Server</dt><dd>Node.js, WebSockets (<code>ws</code>), SQLite</dd></div>
+					<div><dt>Clients</dt><dd>Canvas dashboard; Python Raspberry Pi client</dd></div>
+					<div><dt>Quality</dt><dd>52 tests, 1 runtime dependency</dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo · simulated data</span>
+					<h2>The dashboard, running in your browser</h2>
+					<p>A static site can't host the server, so demo mode runs the <strong>same</strong> simulator, calibration and alert code in the page. Set the speed to 60× to watch visits and alerts happen.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/pet-monitor-live/index.html" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame" data-demo="../demos/pet-monitor-live/index.html" title="Pet Monitor Live dashboard demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#architecture">Architecture</a></li>
+					<li><a href="#calibration">Calibration</a></li>
+					<li><a href="#visits">Visit detection</a></li>
+					<li><a href="#alerts">Alerts without false alarms</a></li>
+					<li><a href="#realtime">Real-time streaming</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>In the capstone, a Raspberry Pi pushed four raw readings to Firebase every second, and the Android app showed only the latest numbers. The weight was a raw ADC count, the pH was a voltage, and there was no history, no charts and no alerts. Pet Monitor Live adds the layer in between:</p>
+					<div class="versions">
+						<div class="version">
+							<h4>Capstone (v1)</h4>
+							<small>Team of 4 · Fall 2023 – Winter 2024</small>
+							<ul>
+								<li>4 sensors on a custom Pi HAT</li>
+								<li>Latest value per sensor in Firebase</li>
+								<li class="no">Raw ADC counts and volts, not grams or pH</li>
+								<li class="no">No history, charts or alerts</li>
+								<li class="no">No offline handling</li>
+							</ul>
+						</div>
+						<div class="version version--new">
+							<h4>Pet Monitor Live</h4>
+							<small>Solo extension</small>
+							<ul>
+								<li>Validated, authenticated ingest API</li>
+								<li>Two-point calibration to grams and pH</li>
+								<li>Visit detection: eating vs drinking</li>
+								<li>Alerts with hysteresis, cooldown and fault detection</li>
+								<li>History, live charts, offline buffering on the Pi</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section id="architecture" class="reveal">
+					<h2><span class="num">02</span> Architecture</h2>
+					<div class="flow">
+						<div class="flow__step"><i class="fab fa-raspberry-pi"></i><strong>Pi / simulator</strong><span>POST readings with a device key</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-filter"></i><strong>Validate &amp; calibrate</strong><span>Reject junk, convert to real units</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-project-diagram"></i><strong>Monitor</strong><span>Visits, alerts, fault detection</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-broadcast-tower"></i><strong>Store &amp; stream</strong><span>SQLite history + WebSocket push</span></div>
+					</div>
+					<p>The core logic (calibration, visit detection, alerts, the simulator) lives in a <code>shared/</code> folder of <strong>pure functions with no input/output</strong>. The server runs it on incoming readings. The browser demo runs the exact same files, and a test checks the copies are byte-identical. The dashboard doesn't care where data comes from: a <code>WebSocketSource</code> and a <code>DemoSource</code> send the same messages.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Piece</th><th>Details</th></tr></thead>
+							<tbody>
+								<tr><td>Ingest</td><td><code>POST /api/readings</code>: single readings or batches of up to 500, an <code>X-Device-Key</code> header, and detailed 400 errors.</td></tr>
+								<tr><td>History</td><td><code>GET /api/history?metric&amp;from&amp;to&amp;bucket</code> returns min/avg/max per time bucket, so a 24-hour chart stays fast.</td></tr>
+								<tr><td>Live</td><td>WebSocket messages <code>{type, data}</code>: snapshot, reading, event, alert, status, config, heartbeat.</td></tr>
+								<tr><td>Pi client</td><td>Python. Reads the same sensors as the capstone firmware, and buffers readings locally and retries with backoff when Wi-Fi drops.</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section id="calibration" class="reveal">
+					<h2><span class="num">03</span> Calibration</h2>
+					<p>Sensors report voltages and counts, not grams or pH. Both conversions use a <strong>two-point linear calibration</strong>: measure two known reference points, and every other reading falls on the straight line between them.</p>
+					<h3>Weight (force-sensitive resistor)</h3>
+					<p>Read the empty bowl (tare) and a known mass, then: <code>grams = (raw − tareRaw) × knownMass ÷ (knownRaw − tareRaw)</code>. A force-sensitive resistor isn't truly linear, so this is an approximation over the bowl's working range. A load cell would be the hardware upgrade.</p>
+					<h3>Water pH (PH-4502C)</h3>
+					<p>Dip the probe in pH 7 and pH 4 buffer solutions and record their voltages (about 2.50 V and 3.04 V). Then <code>slope = 3 ÷ (V₇ − V₄)</code> and <code>pH = 7 + (V − V₇) × slope</code>. An optional correction adjusts the slope for water temperature (the Nernst equation), because pH probes respond differently when warm or cold.</p>
+				</section>
+
+				<section id="visits" class="reveal">
+					<h2><span class="num">04</span> Visit detection</h2>
+					<p>The Person Sensor (the part I built in the capstone) only says "face present: yes or no", once a second. A small <strong>state machine</strong> turns that into visits. A visit starts after several readings in a row see the pet, and ends after several in a row don't, so one noisy reading can't split a visit in two. When the pet leaves, the bowl weight is compared with its weight before the visit to decide whether the pet was eating or drinking:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>shared/sessions.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>// Confirmed departure; the visit ended at the last reading that saw the pet.
+const { startTs, lastSeenTs, baselineG } = this.current;
+const afterG = median(this.leaving.map((x) =&gt; x.weightG));
+const foodEatenG = baselineG != null &amp;&amp; afterG != null ? round(Math.max(0, baselineG - afterG), 1) : null;
+const kind = foodEatenG != null &amp;&amp; foodEatenG &gt;= minEatenG ? 'eating' : 'drinking';
+const event = {
+  type: 'visit_end',
+  ts: r.ts,
+  startTs,
+  endTs: lastSeenTs,
+  durationS: Math.round((lastSeenTs - startTs) / 1000),
+  kind,
+  foodEatenG,
+  // ...
+};</code></pre>
+					</div>
+					<p class="code__note">Taking the <em>median</em> weight after the pet leaves makes the "food eaten" estimate robust to the bowl wobbling.</p>
+				</section>
+
+				<section id="alerts" class="reveal">
+					<h2><span class="num">05</span> Alerts without false alarms</h2>
+					<p>A simple <code>if (temp &gt; 30) alert()</code> fires dozens of times as a reading jitters around 30.0. Each alert rule here uses three techniques:</p>
+					<ul class="cs-list">
+						<li><strong>Confirmation:</strong> the condition must hold for N readings in a row before the alert fires.</li>
+						<li><strong>Hysteresis:</strong> an alert that fired at 30 °C clears only below 29 °C, so a value hovering at the limit doesn't flicker on and off.</li>
+						<li><strong>Cooldown:</strong> a resolved alert can't fire again straight away.</li>
+					</ul>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>shared/alerts.js · AlertTracker.update()</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>update(ts, triggered, cleared, { confirm = 1, cooldownMs = 0 } = {}) {
+  if (!this.active) {
+    this.pending = triggered ? this.pending + 1 : 0;
+    const coolingDown = this.lastFiredAt != null &amp;&amp; ts - this.lastFiredAt &lt; cooldownMs;
+    if (this.pending &gt;= confirm &amp;&amp; !coolingDown) {
+      this.active = true;
+      this.pending = 0;
+      this.lastFiredAt = ts;
+      return 'fire';
+    }
+    return null;
+  }
+  if (cleared) {
+    this.active = false;
+    return 'resolve';
+  }
+  return null;
+}</code></pre>
+					</div>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Alert</th><th>Default rule</th></tr></thead>
+							<tbody>
+								<tr><td>Room temperature</td><td>Above 30 °C or below 15 °C, ±1 °C hysteresis</td></tr>
+								<tr><td>Water pH</td><td>Below 6.5 or above 8.5, ±0.2 hysteresis</td></tr>
+								<tr><td>No visit</td><td>The pet hasn't been to the bowl for 8 hours</td></tr>
+								<tr><td>Device offline</td><td>No reading for 10 seconds</td></tr>
+								<tr><td>Sensor fault</td><td>Stuck value, a spike compared with the median of the last 5 readings, out of range, or missing</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>Readings flagged as faulty are kept out of the charts and the threshold alerts. Otherwise one bad temperature reading of 62 °C would also fire a "room too hot" alert.</p>
+				</section>
+
+				<section id="realtime" class="reveal">
+					<h2><span class="num">06</span> Real-time streaming</h2>
+					<p>New dashboard connections first receive a full snapshot, then live updates. A browser on a slow connection mustn't make the server queue up unlimited data, so <em>readings</em> are skipped for a client that has fallen behind. Alerts and events, which matter more, are always sent:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>server/ws.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>function broadcast(msg) {
+  if (wss.clients.size === 0) return;
+  const payload = JSON.stringify(msg);
+  const droppable = msg.type === 'reading';
+  for (const ws of wss.clients) {
+    if (ws.readyState !== WebSocket.OPEN) continue;
+    if (droppable &amp;&amp; ws.bufferedAmount &gt; maxBufferedBytes) {
+      ws.dropped++;
+      continue;
+    }
+    ws.send(payload);
+  }
+}</code></pre>
+					</div>
+					<p>The dashboard reconnects automatically with increasing delays (backoff), and a heartbeat message lets both sides notice a dead connection.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor-live/live-dashboard.jpg" alt="Live dashboard with temperature, pH and weight charts and an active pH alert" loading="lazy" /></button>
+							<figcaption>The real server with the simulator at 60× speed: a "water too acidic" warning is active, and a rejected sensor spike shows as resolved.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor-live/history-24h-light.jpg" alt="24-hour history view in light theme with visits shaded" loading="lazy" /></button>
+							<figcaption>24-hour history (summarised into time buckets), with visits shaded, in the light theme.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor-live/mobile.jpg" alt="Dashboard on a phone-width screen showing the pet at the bowl" loading="lazy" /></button>
+							<figcaption>At phone width, while the pet is at the bowl.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">07</span> Testing</h2>
+					<p>52 tests with Node's built-in test runner. Because the logic is made of pure functions, most tests just feed in timestamped readings and check what comes out:</p>
+					<ul class="cs-list">
+						<li><strong>Calibration</strong> maths, including the temperature correction and rejection of invalid calibration values.</li>
+						<li><strong>Alerts:</strong> confirmation counts, hysteresis bands, cooldowns and fault detection.</li>
+						<li><strong>Visits:</strong> debouncing, eating vs drinking, and daily totals.</li>
+						<li><strong>Validation</strong> of ingest and configuration, and <strong>history</strong> bucketing.</li>
+						<li><strong>Integration:</strong> boots the real server with an in-memory database, posts readings over HTTP and checks that a WebSocket client receives the reading and alert messages.</li>
+					</ul>
+					<p>The Python Pi client was tested in <code>--mock</code> mode against the live server. Its real-hardware mode uses the same sensor code as the capstone firmware, but hasn't been run on a Pi yet.</p>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">08</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Raw sensor data is only useful after calibration, filtering and context. Most of the work sits between the sensor and the screen.</li>
+						<li>Hysteresis and confirmation are what make alerts trustworthy. A noisy alert gets muted and then ignored.</li>
+						<li>Keeping logic free of I/O paid off three times: easy tests, a server and a browser demo from one codebase, and a simulator to develop against without hardware.</li>
+						<li>Next steps: run it on the real Pi, replace the force-sensitive resistor with a load cell, add push notifications, and support several devices per user.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="sorting-algorithms.html"><small>← Previous</small><strong>Sorting Algorithms</strong></a>
+			<a href="c-http-server.html"><small>Next →</small><strong>tinyhttpd: HTTP Server in C</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

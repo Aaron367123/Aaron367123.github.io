@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>MIPS Emulator — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a two-pass MIPS assembler and step-through CPU emulator that runs in the browser, grown from a C lab series." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Computer architecture</p>
+				<h1 class="cs-hero__title reveal">MIPS Emulator</h1>
+				<p class="cs-hero__summary reveal">A two-pass MIPS assembler and a CPU that fetches, decodes and executes 50+ instructions one step at a time. It started as a C lab series where I wrote the assembler and fetch/decode stages. I finished the execute stage, ported it to JavaScript, and built a debugger-style interface that runs right on this page.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="#demo"><i class="fas fa-play" aria-hidden="true"></i> Run it live</a>
+					<a class="btn btn--ghost" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/mips-emulator" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo, extending my own course labs</dd></div>
+					<div><dt>Size</dt><dd>~1,500 lines of engine code, 61 tests</dd></div>
+					<div><dt>Stack</dt><dd>JavaScript (ES modules), no dependencies; v1 in C</dd></div>
+					<div><dt>Runs</dt><dd>In the browser, or <code>node cli.js file.asm</code></dd></div>
+				</dl>
+			</div>
+		</section>
+
+		<section class="container demo" id="demo">
+			<div class="demo__head reveal">
+				<div>
+					<span class="badge-live">Live demo</span>
+					<h2>Try it: step through the program</h2>
+					<p>Press <strong>Assemble</strong>, then <strong>Step</strong> or <strong>Run</strong>. Changed registers and memory bytes are highlighted. Click a line in the machine-code view to set a breakpoint.</p>
+				</div>
+				<a class="btn btn--ghost" href="../demos/mips-emulator/index.html" target="_blank" rel="noopener"><i class="fas fa-expand" aria-hidden="true"></i> Open full screen</a>
+			</div>
+			<iframe class="demo__frame reveal" data-demo="../demos/mips-emulator/index.html" title="MIPS emulator live demo" loading="lazy"></iframe>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#v1">Where it started</a></li>
+					<li><a href="#assembler">The assembler</a></li>
+					<li><a href="#cpu">The CPU</a></li>
+					<li><a href="#bugs">Bugs I fixed in v1</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>The emulator takes MIPS assembly source and runs it on a model of the processor, showing every register and memory change along the way. It's a teaching tool, and a way to prove I understand what happens beneath a compiler.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-file-code"></i><strong>Assemble</strong><span>Pass 1: labels &amp; data. Pass 2: encode</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-memory"></i><strong>Load</strong><span>1 MB memory, code at 0x0000, data at 0x2000</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-redo"></i><strong>Fetch · decode · execute</strong><span>One instruction per step</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-desktop"></i><strong>Visualise</strong><span>Registers, memory, listing, console</span></div>
+					</div>
+					<div class="metrics">
+						<div class="metric"><b>50+</b><span>instructions &amp; pseudo-instructions</span></div>
+						<div class="metric"><b>61</b><span>automated tests, all passing</span></div>
+						<div class="metric"><b>0</b><span>runtime dependencies</span></div>
+						<div class="metric"><b>4</b><span>example programs (swap, sum, factorial, strlen)</span></div>
+					</div>
+				</section>
+
+				<section id="v1" class="reveal">
+					<h2><span class="num">02</span> Where it started</h2>
+					<p>Version 1 was a computer-architecture lab series in C. The course provided the text parser. I wrote the simulated memory, the instruction encoders and the CPU's fetch and decode stages, but the labs ended before execution was finished.</p>
+					<div class="versions">
+						<div class="version">
+							<h4>v1 · C lab series</h4>
+							<small>Spring 2024</small>
+							<ul>
+								<li>1 MB simulated memory + hex dump</li>
+								<li>Encoders for 8 instructions</li>
+								<li>Fetch &amp; decode</li>
+								<li class="no">Execute stage (only <code>la</code>)</li>
+								<li class="no">No tests, console output only</li>
+							</ul>
+						</div>
+						<div class="version version--new">
+							<h4>v2 · Emulator</h4>
+							<small>Rebuilt &amp; finished</small>
+							<ul>
+								<li>Same memory map and encodings as v1</li>
+								<li>50+ instructions, incl. multiply/divide, jal/jr</li>
+								<li>Full execute stage + syscalls</li>
+								<li>Step, run, breakpoints, error line numbers</li>
+								<li>61 tests, interactive browser UI</li>
+							</ul>
+						</div>
+					</div>
+					<p>I kept v1's design on purpose: the same memory layout, the same course-defined opcodes (for example <code>la = 0x2F</code> and <code>bge = 0x32</code>), and the same bit-packing logic. A test checks the new encoder against the C version's output on 2,000 random inputs.</p>
+				</section>
+
+				<section id="assembler" class="reveal">
+					<h2><span class="num">03</span> The assembler</h2>
+					<p>Labels can be used before they're defined, so the assembler makes <strong>two passes</strong>. The first lays out the data section and records each label's address. The second encodes every instruction now that all addresses are known. Each instruction becomes a 32-bit word in one of three formats:</p>
+					<div class="bits" aria-label="I-type instruction layout">
+						<div><b>opcode</b><span>31–26</span></div>
+						<div><b>rs</b><span>25–21</span></div>
+						<div><b>rt</b><span>20–16</span></div>
+						<div><b>immediate</b><span>15–0</span></div>
+					</div>
+					<p class="bits-label">I-type (loads, stores, branches, immediates). J-type is opcode + 26-bit address; R-type uses rd, shamt and funct.</p>
+					<p>Branches store an offset counted from the <em>next</em> instruction, not an absolute address. That's the same calculation as v1's <code>immediate -= (i + 1)</code>, written in terms of byte addresses:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/assembler.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>function branchOffset(token, inst, labels) {
+  const target = lookupLabel(token, labels, inst.line);
+  const offset = (target - (inst.address + 4)) / 4;
+  if (offset &lt; -32768 || offset &gt; 32767) {
+    throw new MipsError(`Branch target '${token}' is too far away`, { line: inst.line });
+  }
+  return offset;
+}</code></pre>
+					</div>
+					<p>Errors such as an unknown instruction, a bad register, a missing label or a misaligned word access are reported with the source line number, and the editor highlights that line.</p>
+				</section>
+
+				<section id="cpu" class="reveal">
+					<h2><span class="num">04</span> The CPU</h2>
+					<p>The core loop is the four steps from any architecture textbook. The comments link each one to the C function it replaces from v1:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/cpu.js · step()</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>const word = this.memory.readWord(pc);  // 1. fetch   (CPU_fetchCode)
+this.pc = (pc + 4) &gt;&gt;&gt; 0;               // 2. PC += 4 (PC now points to the next instruction)
+const d = decode(word);                 // 3. decode  (CPU_Decode)
+this.execute(d, word);                  // 4. execute (CPU_Execution)</code></pre>
+					</div>
+					<p>Execution is a <code>switch</code> on the decoded instruction. JavaScript numbers aren't 32-bit integers, so the code converts explicitly: <code>&gt;&gt;&gt; 0</code> for unsigned values and shift tricks for sign extension. Byte loads show it well:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/cpu.js · execute()</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>case OPCODE.LB: {
+  const byte = this.memory.readByte(this.effectiveAddress(d));
+  this.setReg(rt, (byte &lt;&lt; 24) &gt;&gt; 24); // sign-extend bit 7
+  break;
+}
+// ...
+case OPCODE.BGE:
+  if (this.signed(rs) &gt;= this.signed(rt)) this.branch(simm);
+  break;</code></pre>
+					</div>
+					<p><code>$zero</code> is hard-wired to 0, the program halts on <code>syscall</code>, and system calls 1, 4 and 11 print an integer, a string and a character to the console panel.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/mips-emulator/mips-mid-run.jpg" alt="Emulator paused mid-run with the current line and a just-written memory byte highlighted" loading="lazy" /></button>
+							<figcaption>Paused after 9 instructions. The byte just stored into <code>testdata2</code> is highlighted.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/mips-emulator/mips-finished.jpg" alt="Emulator after the program finished, showing the two arrays swapped in memory" loading="lazy" /></button>
+							<figcaption>Finished after 79 instructions: the two arrays at 0x2004 and 0x2024 have swapped.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="bugs" class="reveal">
+					<h2><span class="num">05</span> Bugs I fixed in v1</h2>
+					<p>Finishing the execute stage exposed three bugs in my original design that would have stopped the course program from ever running correctly:</p>
+					<ul class="cs-list">
+						<li><strong><code>la</code> loaded an offset, not an address.</strong> v1 stored the data label's offset (e.g. 4) without the 0x2000 base, so the next <code>lw</code> would have read from the code section. It now loads the real address.</li>
+						<li><strong>Decode ignored the function field.</strong> Every R-type instruction has opcode 0, so <code>add</code>, <code>sub</code> and <code>slt</code> all looked identical. Decode now reads <code>funct</code> too.</li>
+						<li><strong>Halting on a zero word.</strong> v1 stopped when it fetched <code>0x00000000</code>, but that's a valid instruction (<code>nop</code>). The CPU now halts on <code>syscall</code> or at the end of the code.</li>
+					</ul>
+					<p>I also <strong>align <code>.word</code> data to 4 bytes</strong>, as standard MIPS assemblers do. In the course program, a one-byte counter left the arrays misaligned, so the first word access would have faulted.</p>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">06</span> Testing</h2>
+					<p>The engine has no UI dependencies, so it's fully tested in Node with the built-in test runner (<code>node --test</code>):</p>
+					<ul class="cs-list">
+						<li><strong>Encoder:</strong> hand-computed words for each format, plus the 2,000-input comparison with v1's bit layout, and a check that no two instructions share an encoding.</li>
+						<li><strong>Assembler:</strong> labels used before they're defined, PC-relative branches in both directions, directives, alignment and error line numbers.</li>
+						<li><strong>Memory:</strong> little-endian byte order and misaligned-access errors.</li>
+						<li><strong>CPU:</strong> the result of each instruction, including overflow, sign extension and <code>hi</code>/<code>lo</code>.</li>
+						<li><strong>End-to-end:</strong> the original course program runs <em>unchanged</em> and the two arrays come out swapped, plus factorial (recursion with <code>jal</code>/<code>jr</code> and the stack), array sum and string length.</li>
+					</ul>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">07</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Finishing a design is the real test of it. All three v1 bugs only showed up once the execute stage existed.</li>
+						<li>Keeping the engine free of UI code made it easy to test thoroughly, and let the same code power both a command-line tool and the browser.</li>
+						<li>Integer behaviour depends on the language: C gives you 32-bit arithmetic, but JavaScript needs explicit conversions to get the same results.</li>
+						<li>Next steps: a pipelined mode that shows hazards and forwarding, and the missing <code>lh</code>/<code>sh</code>/<code>jalr</code> instructions.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="c-http-server.html"><small>← Previous</small><strong>tinyhttpd: HTTP Server in C</strong></a>
+			<a href="music-website.html"><small>Next →</small><strong>Myousik 2.0</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

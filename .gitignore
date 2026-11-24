@@ -1,0 +1,26 @@
+# Project source lives in github.com/Aaron367123/PortfolioProjects
+code/
+
+# Local-only
+_original_backup/
+.claude/
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Leftovers from the original HTML5 UP template (no longer used by the site)
+LICENSE.txt
+README.txt
+assets/sass/
+assets/css/main.css
+assets/css/noscript.css
+assets/js/breakpoints.min.js
+assets/js/browser.min.js
+assets/js/jquery.min.js
+assets/js/jquery.scrollex.min.js
+assets/js/main.js
+assets/js/util.js
+
+# Original full-size photos (the site uses the optimised copies in images/web and images/projects)
+/images/*.jpg
+/images/*.png

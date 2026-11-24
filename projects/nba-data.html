@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>NBA Rookie Data Analysis — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: analysing 35 draft classes of NBA rookie stats in Metabase with SQL to see how the game changed from 1980 to 2015." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Data analysis / SQL</p>
+				<h1 class="cs-hero__title reveal">NBA Rookie Data Analysis</h1>
+				<p class="cs-hero__summary reveal">How has the NBA changed over 35 years? I loaded rookie statistics for every draft class from 1980 to 2015 into Metabase, asked four questions with SQL, and built a dashboard that shows the rise of the three-point shot.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/Data-main" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Date</dt><dd>April 2024</dd></div>
+					<div><dt>Data</dt><dd>NBA rookies by draft year, 1980–2015 (CSV)</dd></div>
+					<div><dt>Tools</dt><dd>Metabase (self-hosted), SQL</dd></div>
+				</dl>
+				<figure class="cs-cover reveal" style="background:#fff">
+					<img src="../images/projects/nba/dashboard.jpg" alt="Metabase dashboard with four charts about NBA rookies by draft year" width="1062" height="622" style="object-fit:contain" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#data">The data</a></li>
+					<li><a href="#questions">Questions &amp; findings</a></li>
+					<li><a href="#sql">The SQL</a></li>
+					<li><a href="#learned">Reflections</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>The goal was to practise the whole analytics loop on a dataset I care about: load raw data, ask specific questions, turn the answers into charts, and put them together into a dashboard someone else can read at a glance.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-file-csv"></i><strong>Load</strong><span>Upload the CSV into Metabase as a table</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-question"></i><strong>Ask</strong><span>Summarise &amp; group by in the query builder</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-chart-bar"></i><strong>Visualise</strong><span>Scatter, line &amp; bar charts</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-th-large"></i><strong>Dashboard</strong><span>4 saved questions on one page</span></div>
+					</div>
+				</section>
+
+				<section id="data" class="reveal">
+					<h2><span class="num">02</span> The data</h2>
+					<p>Each row is one rookie season: the player's name, draft year and their per-game stats.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Group</th><th>Columns</th></tr></thead>
+							<tbody>
+								<tr><td>Identity</td><td><code>name</code>, <code>year_drafted</code></td></tr>
+								<tr><td>Volume</td><td><code>gp</code> (games), <code>min</code> (minutes), <code>pts</code></td></tr>
+								<tr><td>Shooting</td><td><code>fgm</code>, <code>fga</code>, <code>fg_</code>, <code>3p_made</code>, <code>3pa</code>, <code>3p_</code>, <code>ftm</code>, <code>fta</code>, <code>ft_</code></td></tr>
+								<tr><td>Everything else</td><td><code>oreb</code>, <code>dreb</code>, <code>reb</code>, <code>ast</code>, <code>stl</code>, <code>blk</code>, <code>tov</code>, <code>eff</code> (efficiency)</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="metrics">
+						<div class="metric"><b>35</b><span>draft classes, 1980–2015</span></div>
+						<div class="metric"><b>22</b><span>columns per player</span></div>
+						<div class="metric"><b>4</b><span>saved questions + 1 dashboard</span></div>
+					</div>
+				</section>
+
+				<section id="questions" class="reveal">
+					<h2><span class="num">03</span> Questions &amp; findings</h2>
+
+					<h3>1 · Do rookies who play more minutes score more?</h3>
+					<p>Yes, and clearly. Average points rise steadily with average minutes, and the spread widens at the top: rookies playing 30+ minutes range from solid starters to stars scoring 25+ points a game.</p>
+
+					<h3>2 · How has three-point shooting changed?</h3>
+					<p>This is the biggest trend in the data. Rookies in the early 1980s hardly took threes. By the end of the dataset, three-pointers have gone from a rarity to a normal part of every rookie's game.</p>
+
+					<h3>3 · Are some draft classes better than others?</h3>
+					<p>Average rookie efficiency by draft year is fairly flat, but it peaks in classes with standout rookies, for example the early-1990s class that included Shaquille O'Neal, and the classes of Kevin Durant (2007) and Devin Booker (2015).</p>
+
+					<h3>4 · Shot selection: field goals vs. threes</h3>
+					<p>Putting average field-goal attempts next to average three-point attempts shows the change in shot selection: overall attempts drift down while threes take up a growing share.</p>
+
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/nba/minutes-vs-points.jpg" alt="Scatter plot of average minutes against points for NBA rookies" loading="lazy" /></button>
+							<figcaption>Average minutes (x) against points (y).</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/nba/threes-by-year.jpg" alt="Line chart of three-pointers made by rookies, rising from 1980 to 2015" loading="lazy" /></button>
+							<figcaption>Three-pointers made per game, summed across each draft class.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/nba/efficiency.jpg" alt="Bar chart of average rookie efficiency by draft year" loading="lazy" /></button>
+							<figcaption>Average rookie efficiency by draft year.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/nba/fga-vs-3pa.jpg" alt="Grouped bar chart of average field goal attempts and three point attempts by draft year" loading="lazy" /></button>
+							<figcaption>Average field-goal attempts (purple) vs. three-point attempts (orange).</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="sql" class="reveal">
+					<h2><span class="num">04</span> The SQL</h2>
+					<p>I built each question in Metabase's visual query builder, then read the SQL it generated to check it was asking what I meant. This one is behind the shot-selection chart: two averages, grouped and ordered by draft year.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>Metabase · FGA vs 3PA by draft year</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>SELECT
+  "source"."year_drafted" AS "year_drafted",
+  AVG("source"."fga") AS "avg",
+  AVG("source"."3pa") AS "avg_2"
+FROM
+  (
+    SELECT ... FROM
+      "PUBLIC"."nba_rookies_by_year_20240415064734"
+  ) AS "source"
+GROUP BY
+  "source"."year_drafted"
+ORDER BY
+  "source"."year_drafted" ASC</code></pre>
+					</div>
+					<p class="code__note">The inner <code>SELECT</code> lists every column and is shortened to <code>...</code> here.</p>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">05</span> Reflections</h2>
+					<ul class="cs-list">
+						<li><strong>Check the chart against the query.</strong> Re-reading the generated SQL showed that two chart titles didn't match the measures being plotted. Titles are part of the analysis and need checking too.</li>
+						<li><strong>Averages hide things.</strong> One standout rookie can lift a whole draft year's efficiency. Medians, or weighting by games played, would make fairer comparisons.</li>
+						<li><strong>Next steps:</strong> normalise for pace and minutes (per-36 stats), add three-point <em>percentage</em> next to volume, and compare rookies with the league as a whole.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="cmd-server.html"><small>← Previous</small><strong>Multithreaded TCP Command Server</strong></a>
+			<a href="sorting-algorithms.html"><small>Next →</small><strong>Sorting Algorithms</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

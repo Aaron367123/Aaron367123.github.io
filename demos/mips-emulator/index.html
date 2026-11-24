@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MIPS Emulator</title>
+  <meta name="description" content="A step-through MIPS assembler and CPU emulator that runs in the browser: assemble, step, run, and watch registers and memory change.">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply ?theme=light / ?theme=dark before the page paints (no flash).
+    // Without the parameter, style.css follows prefers-color-scheme.
+    (function () {
+      var theme = new URLSearchParams(location.search).get('theme');
+      if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>
+      </span>
+      <div>
+        <h1>MIPS Emulator</h1>
+        <p class="subtitle">Two-pass assembler &middot; fetch / decode / execute</p>
+      </div>
+    </div>
+
+    <div class="controls" role="toolbar" aria-label="Emulator controls">
+      <label class="field">
+        <span class="sr-only">Example program</span>
+        <select id="example" aria-label="Load an example program"></select>
+      </label>
+      <button type="button" id="btn-assemble" class="btn" aria-label="Assemble the source code" title="Assemble (Ctrl+Enter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg><span>Assemble</span>
+      </button>
+      <button type="button" id="btn-step" class="btn" aria-label="Execute one instruction" title="Step one instruction">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5l8 7-8 7z"/><path d="M18 5v14"/></svg><span>Step</span>
+      </button>
+      <button type="button" id="btn-run" class="btn primary" aria-label="Run the program" title="Run until the program ends or hits a breakpoint">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-run"><path d="M7 4l13 8-13 8z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-pause"><path d="M8 5v14M16 5v14"/></svg>
+        <span id="run-label">Run</span>
+      </button>
+      <button type="button" id="btn-reset" class="btn" aria-label="Reset the CPU and memory" title="Reset registers and memory">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg><span>Reset</span>
+      </button>
+      <label class="speed" for="speed">
+        <span class="speed-name">Speed</span>
+        <input type="range" id="speed" min="0" max="9" step="1" value="4" aria-label="Run speed in instructions per second">
+        <output id="speed-label" for="speed">25/s</output>
+      </label>
+    </div>
+  </header>
+
+  <div class="statusbar">
+    <p id="status" class="status" role="status" aria-live="polite">Loading&hellip;</p>
+    <dl class="counters">
+      <div><dt>PC</dt><dd id="pc-value">0x00000000</dd></div>
+      <div><dt>Instructions</dt><dd id="step-count">0</dd></div>
+    </dl>
+  </div>
+
+  <main class="layout">
+    <section class="panel editor-panel" aria-labelledby="editor-title">
+      <div class="panel-head">
+        <h2 id="editor-title">Source</h2>
+        <span class="hint" id="editor-hint">MIPS assembly</span>
+      </div>
+      <div class="editor">
+        <div class="gutter" aria-hidden="true"><div id="gutter" class="gutter-inner"></div></div>
+        <div class="code-area">
+          <div id="line-current" class="line-marker current" hidden></div>
+          <div id="line-error" class="line-marker error" hidden></div>
+          <textarea id="source" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="MIPS assembly source code"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel listing-panel" aria-labelledby="listing-title">
+      <div class="panel-head">
+        <h2 id="listing-title">Machine code</h2>
+        <span class="hint">Click <span class="dot" aria-hidden="true"></span> to set a breakpoint</span>
+      </div>
+      <div class="panel-body" id="listing-scroll">
+        <table class="listing">
+          <thead>
+            <tr><th scope="col"><span class="sr-only">Breakpoint</span></th><th scope="col">Addr</th><th scope="col">Word</th><th scope="col">Instruction</th><th scope="col" class="col-line">Line</th></tr>
+          </thead>
+          <tbody id="listing"></tbody>
+        </table>
+        <p class="empty" id="listing-empty">Assemble a program to see its machine code.</p>
+      </div>
+    </section>
+
+    <section class="panel registers-panel" aria-labelledby="registers-title">
+      <div class="panel-head">
+        <h2 id="registers-title">Registers</h2>
+        <div class="segmented" role="group" aria-label="Register number format">
+          <button type="button" data-format="hex" aria-pressed="true">Hex</button>
+          <button type="button" data-format="dec" aria-pressed="false">Dec</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="registers" id="registers"></div>
+      </div>
+    </section>
+
+    <section class="panel memory-panel" aria-labelledby="memory-title">
+      <div class="panel-head">
+        <h2 id="memory-title">Memory</h2>
+        <div class="segmented" role="group" aria-label="Memory region">
+          <button type="button" data-region="data" aria-pressed="true">Data 0x2000</button>
+          <button type="button" data-region="code" aria-pressed="false">Code 0x0000</button>
+          <button type="button" data-region="stack" aria-pressed="false">Stack</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="memory" id="memory" role="table" aria-label="Memory contents in hexadecimal and ASCII"></div>
+      </div>
+    </section>
+
+    <section class="panel console-panel" aria-labelledby="console-title">
+      <div class="panel-head">
+        <h2 id="console-title">Console</h2>
+        <button type="button" class="link-btn" id="btn-clear" aria-label="Clear the console">Clear</button>
+      </div>
+      <div class="panel-body">
+        <div class="console" id="console" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footnote">
+    Code at <code>0x0000</code>, data at <code>0x2000</code>, stack from <code>0xFFFFC</code> in 1&nbsp;MB of little-endian memory.
+    Engine: plain JavaScript modules, no dependencies.
+  </footer>
+</body>
+</html>

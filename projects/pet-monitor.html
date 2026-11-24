@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Smart Pet Monitor — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: a Raspberry Pi pet monitor with four sensors, a custom PCB, Firebase and an Android app." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · IoT / Embedded / Mobile</p>
+				<h1 class="cs-hero__title reveal">Smart Pet Monitor</h1>
+				<p class="cs-hero__summary reveal">A Raspberry Pi station that sits between a pet's food and water bowls and tracks temperature, the pet's weight, water pH and whether the pet is at the bowl. Readings stream to Firebase every second and show up live in an Android app.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/Pet%20Monitor" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>My role</dt><dd>Presence-detection sensor: hardware, enclosure &amp; firmware</dd></div>
+					<div><dt>Team</dt><dd>4 engineers, one sensor each</dd></div>
+					<div><dt>Timeline</dt><dd>Fall 2023 – Winter 2024<br />Computer Engineering capstone</dd></div>
+					<div><dt>Stack</dt><dd>Raspberry Pi 4, Python, I²C, KiCad, Firebase RTDB, Android</dd></div>
+				</dl>
+				<figure class="cs-cover reveal">
+					<img src="../images/projects/pet-monitor/prototype.jpg" alt="Assembled pet monitor prototype: a Raspberry Pi in a white 3D-printed case between two printed pet bowls, with a pH probe and a person sensor mounted on an arm" width="1600" height="1475" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container" style="padding-top:40px">
+			<div class="callout reveal" style="margin:0"><i class="fas fa-rocket" aria-hidden="true"></i><p><strong>There's a sequel.</strong> After the capstone I built <a href="pet-monitor-live.html" style="color:var(--accent-2)">Pet Monitor Live</a>: calibration to real units, visit detection, smart alerts and a real-time dashboard you can try in the browser.</p></div>
+		</div>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#role">My contribution</a></li>
+					<li><a href="#hardware">Hardware</a></li>
+					<li><a href="#architecture">How it works</a></li>
+					<li><a href="#code">Firmware</a></li>
+					<li><a href="#app">The app</a></li>
+					<li><a href="#testing">Testing &amp; challenges</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Pet owners can't always be home to see whether their pet is eating, drinking clean water or sitting in a room that's too hot. Our team set out to build a small monitoring station that answers those questions remotely.</p>
+					<p>The final build is a <strong>Raspberry Pi 4 on a custom sensor HAT</strong>, housed in a 3D-printed case with two printed bowls. It measures four things and pushes them to the cloud once a second:</p>
+					<div class="feature-grid">
+						<div class="feature-tile"><i class="fas fa-thermometer-half"></i><h4>Temperature</h4><p>DHT22 / AM2302 on a GPIO pin, room temperature in °C.</p></div>
+						<div class="feature-tile"><i class="fas fa-weight"></i><h4>Weight</h4><p>Interlink force-sensitive resistor read through an ADS1115 ADC.</p></div>
+						<div class="feature-tile"><i class="fas fa-flask"></i><h4>Water pH</h4><p>PH-4502C board with a BNC probe in the water bowl, read through the ADC.</p></div>
+						<div class="feature-tile"><i class="fas fa-eye"></i><h4>Presence <small>(my sensor)</small></h4><p>Useful Sensors SEN-21231 Person Sensor over I²C — detects when the pet is at the bowl.</p></div>
+					</div>
+				</section>
+
+				<section id="role" class="reveal">
+					<h2><span class="num">02</span> My contribution</h2>
+					<p>The project was split so that each of the four team members owned one sensor end-to-end, before we integrated everything onto a shared board and app. I owned the <strong>presence-detection sensor</strong>:</p>
+					<ul class="cs-list">
+						<li>Selected and sourced the <strong>SEN-21231 Person Sensor</strong>, and put together its bill of materials and project schedule (Gantt chart).</li>
+						<li>Wired it to the Raspberry Pi over the <strong>Qwiic / I²C</strong> bus and verified it at address <code>0x62</code> with <code>i2cdetect</code>.</li>
+						<li>Wrote the Python driver loop that reads raw I²C bytes, unpacks the face-detection results and toggles a status LED on <code>GPIO17</code>, building on the manufacturer's example code.</li>
+						<li>Designed a <strong>laser-cut enclosure</strong> for the prototype (a CorelDRAW finger-joint box sized around the Pi); the final build moved the sensor into a 3D-printed case on a mounting arm.</li>
+						<li>Presented the working sensor on its own. Its read loop then became the presence section of the team's combined firmware, which publishes <code>faces_detected</code> to Firebase.</li>
+					</ul>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/pet-monitor/person-sensor.jpg" alt="Person sensor in a grey 3D-printed case on an arm, connected to a Raspberry Pi" loading="lazy" /></button>
+							<figcaption>My sensor module: the Person Sensor in its printed case and mount arm, wired to the Pi.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor/i2cdetect.jpg" alt="Terminal output of i2cdetect showing a device at address 0x62" loading="lazy" /></button>
+							<figcaption><code>i2cdetect -y 1</code> confirming the sensor on the I²C bus at <code>0x62</code>.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="hardware" class="reveal">
+					<h2><span class="num">03</span> Hardware</h2>
+					<p>Everything plugs into a single custom HAT designed in <strong>KiCad</strong>, which stacks onto the Pi's 40-pin header. The analog sensors (force and pH) share one ADS1115 analog-to-digital converter, so the Pi only needs I²C and one GPIO line to talk to all four sensors.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Sensor</th><th>Part</th><th>Interface</th></tr></thead>
+							<tbody>
+								<tr><td>Temperature</td><td>DHT22 / AM2302</td><td>Single-wire, GPIO4</td></tr>
+								<tr><td>Weight</td><td>Interlink force-sensitive resistor + 10 kΩ</td><td>ADS1115 channel A1 → I²C <code>0x48</code></td></tr>
+								<tr><td>Water pH</td><td>PH-4502C + BNC electrode</td><td>ADS1115 channel A0 → I²C <code>0x48</code></td></tr>
+								<tr><td>Presence</td><td>SEN-21231 Person Sensor</td><td>Qwiic / I²C <code>0x62</code></td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p>The enclosure went through several iterations: early laser-cut acrylic boxes, then a final set of 3D-printed parts — a Pi case, a sensor case with a mounting arm, a holder for the pH probe and two pet bowls.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor/pcb.jpg" alt="KiCad PCB layout of the PetMonitor sensor HAT" loading="lazy" /></button>
+							<figcaption>The team's final sensor HAT in KiCad, with headers for the force sensor, pH board, temperature sensor and a Qwiic port for the Person Sensor.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="architecture" class="reveal">
+					<h2><span class="num">04</span> How it works</h2>
+					<p>The data path is intentionally simple: one Python loop on the Pi reads every sensor and writes the latest value to Firebase, and the app listens for changes.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-microchip"></i><strong>Sensors</strong><span>GPIO + I²C via the custom HAT</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fab fa-raspberry-pi"></i><strong>Raspberry Pi</strong><span>Python loop, reads all sensors every 1 s</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-fire"></i><strong>Firebase</strong><span>Realtime Database via pyrebase</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fab fa-android"></i><strong>Android app</strong><span>Live values per sensor page</span></div>
+					</div>
+					<p>Each sensor gets its own small node in the <strong>Firebase Realtime Database</strong>, which keeps the app side trivial — each screen subscribes to exactly one path:</p>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor/firebase.jpg" alt="Firebase Realtime Database tree with ph, presence, temperatureData and weight nodes" loading="lazy" /></button>
+							<figcaption>The database tree: <code>ph</code>, <code>presence</code>, <code>temperatureData</code> and <code>weight</code>.</figcaption>
+						</figure>
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor/readings.jpg" alt="Console output from the person sensor listing faces, bounding boxes and confidence" loading="lazy" /></button>
+							<figcaption>Raw Person Sensor output: face count, bounding box, confidence and whether the face is looking at the sensor.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="code" class="reveal">
+					<h2><span class="num">05</span> Firmware</h2>
+					<p>The Person Sensor doesn't have a high-level library, so it's read directly from the Linux I²C device. Each read returns a packed binary frame: a header, a face count, then a fixed-size record per face. The integrated firmware unpacks it with <code>struct</code> and reduces it to a single boolean for the app:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>firmware/Data.py</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>try:
+    read_bytes = i2c_handle.read(PERSON_SENSOR_RESULT_BYTE_COUNT)
+except OSError as error:
+    print("No person sensor data found")
+    print(error)
+    time.sleep(PERSON_SENSOR_DELAY)
+    continue
+offset = 0
+(pad1, pad2, payload_bytes) = struct.unpack_from(
+    PERSON_SENSOR_I2C_HEADER_FORMAT, read_bytes, offset)
+offset = offset + PERSON_SENSOR_I2C_HEADER_BYTE_COUNT
+
+(num_faces) = struct.unpack_from("B", read_bytes, offset)
+num_faces = int(num_faces[0])
+
+faces_detected = num_faces >= 1
+db.child("presence").set({"faces_detected": faces_detected})</code></pre>
+					</div>
+					<p class="code__note">Excerpt (lightly trimmed) from the integrated loop, which also reads the DHT22 and both ADC channels and writes them with <code>db.child(...).set(...)</code>.</p>
+				</section>
+
+				<section id="app" class="reveal">
+					<h2><span class="num">06</span> The app</h2>
+					<p>The Android app, <strong>SmartFeeder</strong>, uses Firebase Authentication for login and registration, then gives each sensor its own page off a home dashboard. Values update live as the Pi writes new readings.</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/pet-monitor/app-screens.jpg" alt="Five SmartFeeder app screens: login, home dashboard, presence, temperature and pH" loading="lazy" /></button>
+							<figcaption>Login, home dashboard, presence ("Not Eating"), temperature (23.7 °C) and pH screens.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">07</span> Testing &amp; challenges</h2>
+					<p>Each sensor was tested on its own and then end-to-end through the app:</p>
+					<ul class="cs-list">
+						<li><strong>Presence</strong> — a pet (and people) in front of the sensor, checking the app flips between found / not eating.</li>
+						<li><strong>Weight</strong> — applying pressure to the force sensor and watching the raw reading change.</li>
+						<li><strong>pH</strong> — dipping the probe in different liquids.</li>
+						<li><strong>Temperature</strong> — moving the unit between environments.</li>
+						<li><strong>App</strong> — JUnit tests on the login module and Espresso tests on the navigation drawer.</li>
+					</ul>
+					<h3>Problems we hit</h3>
+					<ul class="cs-list">
+						<li><strong>Getting the Pi talking to Firebase.</strong> The first attempts were unreliable; switching to the <code>pyrebase</code> library made writes straightforward.</li>
+						<li><strong>Wi-Fi drop-outs on the Pi</strong>, fixed by removing and re-adding the network profile. For the final demo the Pi ran off a phone hotspot.</li>
+						<li><strong>Sharing one I²C bus.</strong> Using a single ADC for both analog sensors and Qwiic for the Person Sensor kept every device on distinct addresses (<code>0x48</code> and <code>0x62</code>).</li>
+					</ul>
+					<div class="callout"><i class="fas fa-lightbulb" aria-hidden="true"></i><p>Next steps would be calibrating the raw readings into real units (grams and pH instead of ADC values and voltage) and adding the food-dispensing mechanism from the original proposal.</p></div>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">08</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Reading a sensor at the byte level — I²C addressing, binary frame layouts and <code>struct</code> unpacking — rather than relying on a library.</li>
+						<li>The full hardware pipeline: datasheets, BOMs, PCB design in KiCad, laser cutting and 3D printing.</li>
+						<li>How to split a system so four people can build in parallel and still integrate cleanly — clear interfaces (one DB node per sensor) made that possible.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="yolo-parking.html"><small>← Previous</small><strong>Parking Detection with YOLOv8</strong></a>
+			<a href="cmd-server.html"><small>Next →</small><strong>Multithreaded TCP Command Server</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

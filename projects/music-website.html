@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Myousik 2.0 — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: rebuilding a static team mockup into a full-stack music app with Express, SQLite, sessions, playlists and 37 API tests." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Full-stack web</p>
+				<h1 class="cs-hero__title reveal">Myousik 2.0</h1>
+				<p class="cs-hero__summary reveal">A full-stack music app: user accounts, a searchable song library, playlists you can build and reorder, and a feedback form. All of it is backed by a REST API and a SQLite database. It's a ground-up rebuild of a static mockup my college team made, which looked like an app but saved nothing.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/myousik-fullstack" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>v2: solo rebuild. v1: team of 4</dd></div>
+					<div><dt>Back end</dt><dd>Node.js, Express 5, SQLite (<code>node:sqlite</code>)</dd></div>
+					<div><dt>Front end</dt><dd>HTML, CSS, JavaScript modules, no framework</dd></div>
+					<div><dt>Quality</dt><dd>37 API tests, Docker, 1 runtime dependency</dd></div>
+				</dl>
+				<figure class="cs-cover reveal">
+					<img src="../images/projects/myousik-fullstack/library.jpg" alt="Myousik 2.0 library page: a searchable song table with edit and delete buttons and a player bar" width="1440" height="900" style="object-position: top" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#v1">v1 → v2</a></li>
+					<li><a href="#architecture">Architecture</a></li>
+					<li><a href="#api">The API</a></li>
+					<li><a href="#security">Auth &amp; security</a></li>
+					<li><a href="#playlists">Playlists</a></li>
+					<li><a href="#frontend">Front end</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>Version 1 of Myousik was a nice-looking set of static pages. Its "login" and "feedback" forms checked their fields in the browser and then went to a hard-coded "success" page. Nothing was stored. I rebuilt it to work like a real product while keeping the original pink-and-mint brand.</p>
+					<div class="feature-grid">
+						<div class="feature-tile"><i class="fas fa-user-lock"></i><h4>Accounts</h4><p>Register, log in and log out, with hashed passwords and server-side sessions.</p></div>
+						<div class="feature-tile"><i class="fas fa-music"></i><h4>Song library</h4><p>Full CRUD with search, genre filter, sorting and pagination.</p></div>
+						<div class="feature-tile"><i class="fas fa-list-ol"></i><h4>Playlists</h4><p>Create, rename and delete playlists; add, remove and reorder songs.</p></div>
+						<div class="feature-tile"><i class="fas fa-comment-dots"></i><h4>Feedback</h4><p>The original form, now validated on the server and actually saved.</p></div>
+					</div>
+				</section>
+
+				<section id="v1" class="reveal">
+					<h2><span class="num">02</span> v1 → v2</h2>
+					<div class="versions">
+						<div class="version">
+							<h4>v1 · Team mockup</h4>
+							<small>4-person course assignment</small>
+							<ul>
+								<li>Clear visual identity</li>
+								<li class="no">No back end or database</li>
+								<li class="no">Validation in the browser only</li>
+								<li class="no">jQuery 1.4.2 from a dead CDN</li>
+								<li class="no">Logged passwords to the console</li>
+							</ul>
+						</div>
+						<div class="version version--new">
+							<h4>v2 · Full-stack rebuild</h4>
+							<small>Solo</small>
+							<ul>
+								<li>REST API + SQLite with migrations</li>
+								<li>Same validation rules in browser and server</li>
+								<li>Hashed passwords, sessions, rate limiting</li>
+								<li>Modern JavaScript modules, no jQuery</li>
+								<li>37 automated tests + Docker</li>
+							</ul>
+						</div>
+					</div>
+					<p>I also fixed every v1 bug I'd noted earlier: the audio player script that ran before the page existed, the feedback check that selected the wrong element, and a password rule whose error message didn't match its regex. The last one is gone for good, because the browser and server now share <strong>one</strong> validation module.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/myousik/index.jpg" alt="Original Myousik v1 home page" loading="lazy" /></button>
+							<figcaption>v1: the original static home page.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/myousik-fullstack/home.jpg" alt="Myousik 2.0 home page with the same pink and mint design, modernised" loading="lazy" /></button>
+							<figcaption>v2: same brand, but every button now leads somewhere real.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="architecture" class="reveal">
+					<h2><span class="num">03</span> Architecture</h2>
+					<p>A deliberately small stack: Express serves both the API and the static front end, and SQLite runs inside the same process using Node's built-in driver. Express is the <strong>only</strong> runtime dependency. I wrote the cookie parsing, security headers, rate limiter and validation myself, to understand them rather than import them.</p>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-desktop"></i><strong>Browser</strong><span>JS modules call <code>fetch('/api/…')</code></span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-shield-alt"></i><strong>Middleware</strong><span>Security headers, cookies, session, rate limit</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-route"></i><strong>Routes</strong><span>Validate → query → JSON response</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-database"></i><strong>SQLite</strong><span>6 tables, migrations, foreign keys</span></div>
+					</div>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Table</th><th>Purpose</th></tr></thead>
+							<tbody>
+								<tr><td><code>users</code></td><td>Username plus scrypt salt and hash. Passwords are never stored.</td></tr>
+								<tr><td><code>sessions</code></td><td>A SHA-256 of each session token, with an expiry time.</td></tr>
+								<tr><td><code>songs</code></td><td>Title, artist, album, genre, year, duration, cover and audio URL, and who added it.</td></tr>
+								<tr><td><code>playlists</code></td><td>Owned by one user.</td></tr>
+								<tr><td><code>playlist_songs</code></td><td>Join table with a <code>position</code> column. Its primary key is (playlist, song).</td></tr>
+								<tr><td><code>feedback</code></td><td>Name, email, a 1–3 rating and comments.</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section id="api" class="reveal">
+					<h2><span class="num">04</span> The API</h2>
+					<p>Every endpoint returns JSON with the right status code, and every error has the same shape (<code>{ error: { code, message, fields } }</code>), so the front end can show the server's field errors next to the right input.</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>Endpoint</th><th>What it does</th></tr></thead>
+							<tbody>
+								<tr><td><code>POST /api/auth/register · login · logout</code></td><td>Account and session lifecycle. <code>GET /api/auth/me</code> returns the current user.</td></tr>
+								<tr><td><code>GET /api/songs?q=&amp;genre=&amp;sort=&amp;page=</code></td><td>Search, filter, sort and paginate the library.</td></tr>
+								<tr><td><code>POST · PUT · PATCH · DELETE /api/songs/:id</code></td><td>Song CRUD. Editing and deleting are limited to the user who added the song.</td></tr>
+								<tr><td><code>/api/playlists</code> &amp; <code>/:id</code></td><td>Your own playlists: list, create, rename, delete.</td></tr>
+								<tr><td><code>POST · DELETE /api/playlists/:id/songs</code></td><td>Add or remove a song.</td></tr>
+								<tr><td><code>PUT /api/playlists/:id/songs/order</code></td><td>Reorder the whole playlist at once.</td></tr>
+								<tr><td><code>POST /api/feedback</code></td><td>Public, validated and rate-limited.</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section id="security" class="reveal">
+					<h2><span class="num">05</span> Auth &amp; security</h2>
+					<ul class="cs-list">
+						<li><strong>Passwords</strong> are hashed with <code>scrypt</code> and a random salt for each user, and compared in constant time.</li>
+						<li><strong>Sessions</strong> use a random token in an <code>httpOnly</code>, <code>SameSite=Lax</code> cookie. The database stores only a hash of the token, so a leaked database can't be used to log in.</li>
+						<li><strong>CSRF protection:</strong> requests that change data must be JSON (otherwise 415), and requests from another origin are rejected (403).</li>
+						<li><strong>Rate limiting</strong> on login and feedback (429), <strong>parameterised SQL</strong> everywhere, and security headers on every response.</li>
+					</ul>
+					<p>One detail I'm proud of: logging in with a username that doesn't exist still runs scrypt once, against a dummy hash. Without that, the faster response would reveal which usernames are registered.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/auth/password.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>export async function verifyPassword(password, saltHex, hashHex) {
+  const expected = Buffer.from(hashHex, 'hex');
+  const actual = await scryptAsync(normalise(password), Buffer.from(saltHex, 'hex'), expected.length, SCRYPT_OPTIONS);
+  // timingSafeEqual throws on length mismatch, so check length first.
+  return actual.length === expected.length &amp;&amp; timingSafeEqual(actual, expected);
+}
+
+/**
+ * A throwaway hash used when a login names a user that doesn't exist: we
+ * still run scrypt once so the response time doesn't reveal which usernames
+ * are registered.
+ */
+export const DUMMY_CREDENTIALS = await hashPassword(randomBytes(12).toString('hex'));</code></pre>
+					</div>
+				</section>
+
+				<section id="playlists" class="reveal">
+					<h2><span class="num">06</span> Playlists &amp; reordering</h2>
+					<p>Reordering is easy to get subtly wrong. If two browser tabs edit the same playlist, a stale tab could send an order that drops or duplicates songs. To prevent that, the client sends the <strong>complete</strong> new order, and the server accepts it only if it contains exactly the playlist's current songs, each once. The new positions are written inside a transaction, so a failure leaves the playlist unchanged.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/routes/playlists.js</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>router.put('/:id/songs/order', (req, res) =&gt; {
+  const playlist = loadOwned(req);
+  const { song_ids: newOrder } = check(req.body, schemas.playlistOrder);
+  transaction(db, () =&gt; {
+    const current = orderedSongIds.all(playlist.id).map((r) =&gt; r.song_id);
+    const sameSet = newOrder.length === current.length &amp;&amp; newOrder.every((id) =&gt; current.includes(id));
+    if (!sameSet) {
+      throw badRequest('Order must list every song in the playlist exactly once.', {
+        song_ids: 'Must contain exactly the songs currently in the playlist.',
+      });
+    }
+    writeOrder(playlist.id, newOrder);
+  });
+  res.json(detail(playlist.id));
+});</code></pre>
+					</div>
+					<p class="code__note"><code>loadOwned</code> returns 404 if the playlist doesn't exist and 403 if it belongs to someone else. The shared validator has already rejected duplicate ids before this code runs.</p>
+				</section>
+
+				<section id="frontend" class="reveal">
+					<h2><span class="num">07</span> Front end</h2>
+					<p>No framework: each page is an HTML file plus a small JavaScript module, with shared helpers for API calls, forms and the player bar. Forms show errors next to each field and in a summary at the top, announced to screen readers. The layout works down to phone width.</p>
+					<div class="gallery">
+						<figure>
+							<button type="button"><img src="../images/projects/myousik-fullstack/playlist.jpg" alt="Playlist page with cover mosaic, reorder buttons and an add-songs search panel" loading="lazy" /></button>
+							<figcaption>A playlist: a cover made from its songs' artwork, reorder controls and a search panel for adding songs.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/myousik-fullstack/feedback-validation.jpg" alt="Feedback form showing field errors returned by the server" loading="lazy" /></button>
+							<figcaption>Field errors from the shared validator, shown next to each input and in a summary.</figcaption>
+						</figure>
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/myousik-fullstack/mobile.jpg" alt="Home, library and playlist pages at phone width" loading="lazy" /></button>
+							<figcaption>Home, library and playlist pages at phone width (390 px).</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">08</span> Testing</h2>
+					<p><code>npm test</code> starts the real app on a random port with a fresh in-memory database, then calls it with <code>fetch</code>. That's 37 tests, using only Node's built-in test runner:</p>
+					<ul class="cs-list">
+						<li><strong>Auth:</strong> register, login, logout, <code>/me</code>, wrong password, duplicate usernames, session expiry.</li>
+						<li><strong>Validation:</strong> every write endpoint returns 400 with field errors on bad input.</li>
+						<li><strong>Songs:</strong> CRUD, search, sorting and pagination, plus 401 when logged out and 403 when editing someone else's song.</li>
+						<li><strong>Playlists:</strong> ownership (403), add, remove and reorder, and rejection of stale or invalid orders.</li>
+						<li><strong>Security:</strong> wrong content type (415), cross-origin writes (403) and rate limiting (429).</li>
+					</ul>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">09</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Client-side validation is for the user's convenience; server-side validation is what keeps data correct. Sharing one module between the two keeps them in sync.</li>
+						<li>Writing my own session handling taught me <em>why</em> libraries do what they do: hashing tokens, constant-time comparison, cookie flags.</li>
+						<li>Test against the real HTTP interface, not internal functions. Those tests caught bugs in middleware order that unit tests wouldn't have.</li>
+						<li>Next steps: password reset, drag-and-drop reordering, shared playlists and a rate limiter that works across multiple servers (for example with Redis).</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="mips-simulator.html"><small>← Previous</small><strong>MIPS Emulator</strong></a>
+			<a href="yolo-parking.html"><small>Next →</small><strong>Parking Detection with YOLOv8</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

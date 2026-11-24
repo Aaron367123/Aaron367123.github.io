@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Aaron Morris Jara — Software Developer</title>
+	<meta name="description" content="Portfolio of Aaron Morris Jara — graduate developer working in C, Python, Java, JavaScript, SQL, HTML and CSS." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="assets/css/style.css" />
+	<script>
+		/* Apply saved theme before paint to avoid a flash */
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<!-- Navigation -->
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="#top" class="nav__logo" aria-label="Back to top">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="#about">About</a>
+				<a href="#skills">Skills</a>
+				<a href="#projects">Projects</a>
+				<a href="#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">
+					<i class="fas fa-moon" aria-hidden="true"></i>
+				</button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+					<i class="fas fa-bars" aria-hidden="true"></i>
+				</button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+
+		<!-- Hero -->
+		<section class="hero" id="top">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<span class="blob blob--3"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container hero__inner">
+				<p class="eyebrow reveal"><span class="pulse"></span> Open to new opportunities</p>
+				<h1 class="hero__title reveal">
+					Hi, I'm <span class="gradient-text">Aaron Morris Jara</span>.
+				</h1>
+				<p class="hero__subtitle reveal">
+					A graduate developer who builds <span class="typed" id="typed" aria-live="polite">IoT devices</span><span class="caret" aria-hidden="true"></span>
+				</p>
+				<p class="hero__lead reveal">
+					Well versed in C, Python, Java/JavaScript, CSS, HTML and SQL — from low-level CPU simulation to IoT hardware, computer vision and data dashboards.
+				</p>
+				<div class="hero__cta reveal">
+					<a href="#projects" class="btn btn--primary">View my work <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+					<a href="#contact" class="btn btn--ghost">Get in touch</a>
+				</div>
+				<ul class="socials reveal" aria-label="Social links">
+					<li><a href="https://github.com/Aaron367123" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
+					<li><a href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a></li>
+					<li><a href="mailto:aaronjara367@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
+				</ul>
+			</div>
+			<a href="#about" class="scroll-hint" aria-label="Scroll to About"><span></span></a>
+		</section>
+
+		<!-- About -->
+		<section class="section" id="about">
+			<div class="container about">
+				<div class="about__text reveal">
+					<p class="section__kicker">01 — About</p>
+					<h2 class="section__title">Curious about how things work, all the way down.</h2>
+					<p>
+						I'm a Computer Engineering Technology graduate who enjoys working across hardware and software: writing a MIPS assembler in C,
+						wiring sensors on a Raspberry Pi to a live Android app, training object-detection models, and writing an HTTP server from scratch in C.
+					</p>
+					<p>
+						I like projects where I get to learn something new, and I care about writing code that's clear, tested and easy for the next person to pick up.
+					</p>
+				</div>
+				<div class="about__stats reveal">
+					<div class="stat"><span class="stat__num" data-count="9">9</span><span class="stat__label">Projects with case studies</span></div>
+					<div class="stat"><span class="stat__num" data-count="6">6</span><span class="stat__label">Languages</span></div>
+					<div class="stat"><span class="stat__num" data-count="2">2</span><span class="stat__label">Live demos you can run here</span></div>
+					<div class="stat"><span class="stat__num" data-count="334">334</span><span class="stat__label">Automated tests &amp; checks</span></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Skills -->
+		<section class="section section--alt" id="skills">
+			<div class="container">
+				<div class="section__head reveal">
+					<p class="section__kicker">02 — Skills</p>
+					<h2 class="section__title">My toolkit</h2>
+				</div>
+				<div class="skills">
+					<article class="skill-card reveal">
+						<div class="skill-card__icon"><i class="fas fa-code" aria-hidden="true"></i></div>
+						<h3>Languages</h3>
+						<ul class="chips">
+							<li>C</li><li>Python</li><li>Java</li><li>JavaScript</li><li>SQL</li><li>HTML</li><li>CSS</li>
+						</ul>
+					</article>
+					<article class="skill-card reveal">
+						<div class="skill-card__icon"><i class="fas fa-microchip" aria-hidden="true"></i></div>
+						<h3>Systems &amp; Hardware</h3>
+						<ul class="chips">
+							<li>Raspberry Pi</li><li>I²C / GPIO sensors</li><li>KiCad PCB design</li><li>MIPS architecture</li><li>Sockets &amp; HTTP</li><li>pthreads / concurrency</li><li>Linux &amp; systemd</li>
+						</ul>
+					</article>
+					<article class="skill-card reveal">
+						<div class="skill-card__icon"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
+						<h3>Frameworks &amp; Tools</h3>
+						<ul class="chips">
+							<li>Node.js &amp; Express</li><li>WebSockets</li><li>SQLite</li><li>Firebase</li><li>YOLOv8 / PyTorch</li><li>Metabase</li><li>Docker</li><li>Git &amp; GitHub</li>
+						</ul>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<!-- Projects -->
+		<section class="section" id="projects">
+			<div class="container">
+				<div class="section__head reveal">
+					<p class="section__kicker">03 — Projects</p>
+					<h2 class="section__title">Featured work</h2>
+				</div>
+
+				<div class="featured">
+					<article class="feature reveal">
+						<a class="feature__media feature__media--photo feature__media--screen" href="projects/pet-monitor-live.html" tabindex="-1" aria-hidden="true">
+							<img src="images/projects/pet-monitor-live/live-dashboard.jpg" alt="" loading="lazy" width="1440" height="900" />
+						</a>
+						<div class="feature__body">
+							<p class="feature__num">01 · IoT &amp; real-time · <span class="feature__live">Live demo</span></p>
+							<h3>Pet Monitor Live</h3>
+							<p>The software layer my Raspberry Pi capstone was missing: a validated ingest API, two-point calibration from raw sensor values to grams and pH, visit detection, alerts with hysteresis, history storage, and a live WebSocket dashboard. A demo mode runs right in the browser.</p>
+							<ul class="tags"><li>Node.js</li><li>WebSockets</li><li>SQLite</li><li>Canvas</li><li>Python</li><li>52 tests</li></ul>
+							<div class="feature__links">
+								<a class="link-arrow" href="projects/pet-monitor-live.html">Case study &amp; demo <i class="fas fa-arrow-right"></i></a>
+								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/pet-monitor-live" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
+							</div>
+						</div>
+					</article>
+
+					<article class="feature feature--reverse reveal">
+						<a class="feature__media feature__media--photo feature__media--screen" href="projects/c-http-server.html" tabindex="-1" aria-hidden="true">
+							<img src="images/projects/c-http-server/bench-chart.jpg" alt="" loading="lazy" width="1440" height="780" style="object-fit:contain;background:#0b0f1a" />
+						</a>
+						<div class="feature__body">
+							<p class="feature__num">02 · Systems programming</p>
+							<h3>tinyhttpd: HTTP Server in C</h3>
+							<p>A multithreaded HTTP/1.1 server written from scratch in C, with a bounded work queue and back-pressure, keep-alive and pipelining, and path-traversal defences. I benchmarked it with my own load tester: <strong>~9,900 requests/s</strong> and 0 errors across about a million requests.</p>
+							<ul class="tags"><li>C11</li><li>pthreads</li><li>Sockets</li><li>HTTP/1.1</li><li>184 tests</li></ul>
+							<div class="feature__links">
+								<a class="link-arrow" href="projects/c-http-server.html">Read the case study <i class="fas fa-arrow-right"></i></a>
+								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/c-http-server" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
+							</div>
+						</div>
+					</article>
+
+					<article class="feature reveal">
+						<a class="feature__media feature__media--photo feature__media--screen" href="projects/mips-simulator.html" tabindex="-1" aria-hidden="true">
+							<img src="images/projects/mips-emulator/mips-finished.jpg" alt="" loading="lazy" width="1440" height="900" />
+						</a>
+						<div class="feature__body">
+							<p class="feature__num">03 · Computer architecture · <span class="feature__live">Live demo</span></p>
+							<h3>MIPS Emulator</h3>
+							<p>A two-pass assembler and step-through CPU with 50+ instructions, breakpoints, and live register and memory views. It grew from my C lab series. I finished the execute stage, fixed three design bugs from v1, and kept the original instruction encodings.</p>
+							<ul class="tags"><li>JavaScript</li><li>Computer architecture</li><li>C (v1)</li><li>61 tests</li></ul>
+							<div class="feature__links">
+								<a class="link-arrow" href="projects/mips-simulator.html">Case study &amp; demo <i class="fas fa-arrow-right"></i></a>
+								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/mips-emulator" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
+							</div>
+						</div>
+					</article>
+				</div>
+
+				<div class="section__head section__head--sub reveal">
+					<h2 class="section__title section__title--sm">More projects</h2>
+				</div>
+
+				<div class="cards">
+					<a class="card reveal" href="projects/music-website.html">
+						<div class="card__media"><img src="images/projects/myousik-fullstack/home.jpg" alt="Myousik 2.0 home page" loading="lazy" width="1440" height="900" /></div>
+						<div class="card__body">
+							<h3>Myousik 2.0: Full-Stack Music App</h3>
+							<p>A static team mockup rebuilt as a real app: REST API, SQLite, hashed-password sessions, a searchable library and reorderable playlists.</p>
+							<ul class="tags"><li>Express</li><li>SQLite</li><li>Auth</li><li>37 tests</li></ul>
+							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+					<a class="card reveal" href="projects/yolo-parking.html">
+						<div class="card__media"><img src="images/projects/yolo/test-1.jpg" alt="Parking lot with detected spaces" loading="lazy" width="640" height="640" /></div>
+						<div class="card__body">
+							<h3>Parking Detection with YOLOv8</h3>
+							<p>An object detector that marks free and occupied spaces in aerial photos: 89.4% mAP@50 and 91% precision after 25 epochs.</p>
+							<ul class="tags"><li>Python</li><li>YOLOv8</li><li>PyTorch</li></ul>
+							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+					<a class="card reveal" href="projects/pet-monitor.html">
+						<div class="card__media"><img src="images/projects/pet-monitor/prototype.jpg" alt="Smart Pet Monitor hardware prototype" loading="lazy" width="1600" height="1475" /></div>
+						<div class="card__body">
+							<h3>Smart Pet Monitor (Capstone)</h3>
+							<p>A Raspberry Pi with four sensors on a custom PCB, reporting to Firebase and an Android app. I built the presence-detection sensor.</p>
+							<ul class="tags"><li>Raspberry Pi</li><li>I²C</li><li>KiCad</li><li>Team of 4</li></ul>
+							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+					<a class="card reveal" href="projects/cmd-server.html">
+						<div class="card__media" style="background:#fff"><img src="images/projects/cmd-server/multithreaded-3-clients.jpg" alt="Three telnet clients on separate server threads" loading="lazy" width="1013" height="359" style="object-fit:contain" /></div>
+						<div class="card__body">
+							<h3>Multithreaded TCP Command Server</h3>
+							<p>A Java telnet command server with a thread pool, deployed as a systemd service on Linux.</p>
+							<ul class="tags"><li>Java</li><li>Sockets</li><li>systemd</li></ul>
+							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+					<a class="card reveal" href="projects/nba-data.html">
+						<div class="card__media" style="background:#fff"><img src="images/projects/nba/dashboard.jpg" alt="Metabase dashboard of NBA rookie statistics" loading="lazy" width="1062" height="622" style="object-position:top" /></div>
+						<div class="card__body">
+							<h3>NBA Rookie Data Analysis</h3>
+							<p>35 draft classes of rookie stats analysed with SQL in Metabase, showing the rise of the three-point shot.</p>
+							<ul class="tags"><li>SQL</li><li>Metabase</li><li>Data viz</li></ul>
+							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+					<a class="card reveal" href="projects/sorting-algorithms.html">
+						<div class="card__media"><img src="images/web/java.jpg" alt="Java code on a screen" loading="lazy" width="1200" height="800" /></div>
+						<div class="card__body">
+							<h3>Sorting Algorithms</h3>
+							<p>Four sorting algorithms in Java, timed against each other, with an interactive visualizer and a live benchmark.</p>
+							<ul class="tags"><li>Java</li><li>Algorithms</li><li>Big-O</li></ul>
+							<span class="card__more">Try the visualizer <i class="fas fa-arrow-right"></i></span>
+						</div>
+						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Contact -->
+		<section class="section section--alt" id="contact">
+			<div class="container">
+				<div class="contact reveal">
+					<p class="section__kicker">04 — Contact</p>
+					<h2 class="section__title">Let's build something together.</h2>
+					<p class="contact__lead">I'm currently looking for new roles and interesting projects. Whether you have a question or just want to say hi, my inbox is open.</p>
+					<a href="mailto:aaronjara367@gmail.com" class="btn btn--primary btn--lg"><i class="fas fa-paper-plane" aria-hidden="true"></i> Say hello</a>
+
+					<div class="contact__grid">
+						<a class="contact-item" href="mailto:aaronjara367@gmail.com">
+							<i class="fas fa-envelope" aria-hidden="true"></i>
+							<span><small>Email</small>aaronjara367@gmail.com</span>
+						</a>
+						<a class="contact-item" href="tel:+16478650408">
+							<i class="fas fa-phone" aria-hidden="true"></i>
+							<span><small>Phone</small>(647) 865-0408</span>
+						</a>
+						<a class="contact-item" href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener">
+							<i class="fab fa-linkedin-in" aria-hidden="true"></i>
+							<span><small>LinkedIn</small>in/aaron-morris-jara</span>
+						</a>
+						<a class="contact-item" href="https://github.com/Aaron367123" target="_blank" rel="noopener">
+							<i class="fab fa-github" aria-hidden="true"></i>
+							<span><small>GitHub</small>Aaron367123</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#top" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="assets/js/site.js"></script>
+</body>
+</html>

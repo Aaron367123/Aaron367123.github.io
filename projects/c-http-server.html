@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>HTTP Server in C — Aaron Morris Jara</title>
+	<meta name="description" content="Case study: tinyhttpd, a multithreaded HTTP/1.1 server written from scratch in C, with a bounded work queue, keep-alive, path-traversal defences and a custom load tester." />
+	<meta name="theme-color" content="#0b0f1a" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%237c5cff'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='700' font-size='28' fill='white'>AJ</text></svg>" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
+	<link rel="stylesheet" href="../assets/css/style.css" />
+	<link rel="stylesheet" href="../assets/css/case-study.css" />
+	<script>
+		document.documentElement.classList.add('js');
+		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+	</script>
+</head>
+<body>
+	<a class="skip-link" href="#main">Skip to content</a>
+
+	<header class="nav" id="nav">
+		<div class="container nav__inner">
+			<a href="../index.html" class="nav__logo" aria-label="Home">
+				<span class="nav__logo-mark">AJ</span>
+				<span class="nav__logo-text">Aaron Jara</span>
+			</a>
+			<nav class="nav__links" id="nav-links" aria-label="Primary">
+				<a href="../index.html#about">About</a>
+				<a href="../index.html#skills">Skills</a>
+				<a href="../index.html#projects" class="is-active">Projects</a>
+				<a href="../index.html#contact">Contact</a>
+			</nav>
+			<div class="nav__actions">
+				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme"><i class="fas fa-moon" aria-hidden="true"></i></button>
+				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><i class="fas fa-bars" aria-hidden="true"></i></button>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="cs-hero">
+			<div class="hero__bg" aria-hidden="true">
+				<span class="blob blob--1"></span>
+				<span class="blob blob--2"></span>
+				<div class="grid-overlay"></div>
+			</div>
+			<div class="container">
+				<a class="back-link" href="../index.html#projects"><i class="fas fa-arrow-left" aria-hidden="true"></i> All projects</a>
+				<p class="section__kicker reveal">Case study · Systems programming / C</p>
+				<h1 class="cs-hero__title reveal">tinyhttpd: an HTTP server in C</h1>
+				<p class="cs-hero__summary reveal">A multithreaded HTTP/1.1 static-file server written from scratch in C, with no libraries beyond the OS. It has a bounded work queue with back-pressure, keep-alive and pipelining, defences against path traversal, and graceful shutdown. I also wrote a load-testing tool in C and used it to measure how the design scales.</p>
+				<div class="cs-hero__actions reveal">
+					<a class="btn btn--primary" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/c-http-server" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> Source code</a>
+					<a class="btn btn--ghost" href="#benchmarks"><i class="fas fa-tachometer-alt" aria-hidden="true"></i> Benchmarks</a>
+				</div>
+				<dl class="cs-meta reveal">
+					<div><dt>Role</dt><dd>Solo project</dd></div>
+					<div><dt>Language</dt><dd>C11, pthreads, sockets (~2,900 lines)</dd></div>
+					<div><dt>Quality</dt><dd>0 warnings at <code>-Wall -Wextra -Wpedantic</code>, cppcheck clean</dd></div>
+					<div><dt>Tests</dt><dd>163 unit checks + 21 integration tests</dd></div>
+				</dl>
+				<figure class="cs-cover reveal" style="background:#0b0f1a">
+					<img src="../images/projects/c-http-server/bench-chart.jpg" alt="Chart of requests per second against worker threads, with and without keep-alive, for 1 KiB and 100 KiB files" width="1440" height="780" style="object-fit:contain" />
+				</figure>
+			</div>
+		</section>
+
+		<div class="container cs-layout">
+			<aside class="cs-toc" aria-label="On this page">
+				<p>On this page</p>
+				<ol>
+					<li><a href="#overview">Overview</a></li>
+					<li><a href="#architecture">Architecture</a></li>
+					<li><a href="#queue">The work queue</a></li>
+					<li><a href="#http">Speaking HTTP</a></li>
+					<li><a href="#security">Path traversal</a></li>
+					<li><a href="#testing">Testing</a></li>
+					<li><a href="#benchmarks">Benchmarks</a></li>
+					<li><a href="#learned">What I learned</a></li>
+				</ol>
+			</aside>
+
+			<article class="cs-article">
+				<section id="overview" class="reveal">
+					<h2><span class="num">01</span> Overview</h2>
+					<p>My <a href="cmd-server.html">Java command server</a> taught me sockets and thread pools, with Java taking care of the hard parts. This project removes that help. In C I had to manage every buffer, every lock and every way a connection can fail, and then <em>measure</em> whether the design holds up under load.</p>
+					<div class="metrics">
+						<div class="metric"><b>9,859</b><span>requests/s at peak (1 KiB, keep-alive, 8 workers)</span></div>
+						<div class="metric"><b>906 MB/s</b><span>throughput serving 100 KiB files</span></div>
+						<div class="metric"><b>0</b><span>errors in ~1 million benchmark requests</span></div>
+						<div class="metric"><b>&lt;1 ms</b><span>median latency with keep-alive</span></div>
+					</div>
+					<div class="feature-grid">
+						<div class="feature-tile"><i class="fas fa-exchange-alt"></i><h4>HTTP/1.1</h4><p>GET/HEAD, keep-alive, pipelining, HTTP/1.0, <code>If-Modified-Since</code> → 304, correct error codes.</p></div>
+						<div class="feature-tile"><i class="fas fa-layer-group"></i><h4>Bounded concurrency</h4><p>A fixed pool of worker threads plus a bounded queue. When it's full, the server answers 503 instead of slowing down.</p></div>
+						<div class="feature-tile"><i class="fas fa-shield-alt"></i><h4>Hardened file serving</h4><p>Blocks 11 path-traversal tricks, hidden files and Windows device names. Files are sent in chunks.</p></div>
+						<div class="feature-tile"><i class="fas fa-power-off"></i><h4>Graceful shutdown</h4><p>Ctrl-C stops accepting, drains the queue, joins the workers and prints statistics.</p></div>
+					</div>
+				</section>
+
+				<section id="architecture" class="reveal">
+					<h2><span class="num">02</span> Architecture</h2>
+					<div class="flow">
+						<div class="flow__step"><i class="fas fa-door-open"></i><strong>Accept loop</strong><span>Main thread accepts connections</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-stream"></i><strong>Bounded queue</strong><span>Ring buffer, mutex + 2 condvars</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-users-cog"></i><strong>Worker pool</strong><span>N threads, one connection each</span></div>
+						<div class="flow__arrow"><i class="fas fa-chevron-right"></i></div>
+						<div class="flow__step"><i class="fas fa-file-export"></i><strong>Parse → route → send</strong><span>Files, /__health, /__stats</span></div>
+					</div>
+					<p>It runs on Windows (Winsock) and Linux/macOS (POSIX sockets) from one codebase. Every <code>#ifdef _WIN32</code> sits in two small compatibility files (<code>net.c</code> and <code>platform.c</code>), so the server logic never touches OS-specific code. Request counters use C11 atomics, and access-log lines are written under a mutex so lines from different threads never interleave.</p>
+				</section>
+
+				<section id="queue" class="reveal">
+					<h2><span class="num">03</span> The work queue</h2>
+					<p>Creating a thread for every connection collapses under a traffic spike. Instead, the accept thread puts connections into a fixed-size ring buffer, and a fixed number of workers take them out. Two condition variables coordinate them: <code>not_empty</code> wakes a worker and <code>not_full</code> wakes a producer.</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/queue.c</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>int queue_try_push(queue_t *q, const job_t *job)
+{
+    int rc;
+    pthread_mutex_lock(&amp;q-&gt;mu);
+    if (q-&gt;closed) {
+        rc = -1;
+    } else if (q-&gt;count == q-&gt;capacity) {
+        rc = 0; /* full: caller applies back-pressure (503) */
+    } else {
+        enqueue_locked(q, job);
+        rc = 1;
+    }
+    pthread_mutex_unlock(&amp;q-&gt;mu);
+    return rc;
+}
+
+int queue_pop(queue_t *q, job_t *out)
+{
+    int rc = 0;
+    pthread_mutex_lock(&amp;q-&gt;mu);
+    while (q-&gt;count == 0 &amp;&amp; !q-&gt;closed)
+        pthread_cond_wait(&amp;q-&gt;not_empty, &amp;q-&gt;mu);
+    if (q-&gt;count &gt; 0) { /* closed queues still hand out what is left */
+        *out = q-&gt;items[q-&gt;head];
+        q-&gt;head = (q-&gt;head + 1) % q-&gt;capacity;
+        q-&gt;count--;
+        pthread_cond_signal(&amp;q-&gt;not_full); /* one slot freed -&gt; wake one producer */
+        rc = 1;
+    }
+    pthread_mutex_unlock(&amp;q-&gt;mu);
+    return rc;
+}</code></pre>
+					</div>
+					<ul class="cs-list">
+						<li>The wait is inside a <code>while</code>, not an <code>if</code>, because condition variables can wake up spuriously.</li>
+						<li>The accept thread uses the <em>try</em> version: when the queue is full it replies <strong>503</strong> immediately instead of blocking. That's back-pressure.</li>
+						<li>For shutdown, the queue is closed but still hands out jobs already in it, so requests that were accepted get finished.</li>
+					</ul>
+				</section>
+
+				<section id="http" class="reveal">
+					<h2><span class="num">04</span> Speaking HTTP</h2>
+					<p>The parser enforces strict limits: 8 KB of headers (431), maximum URI length (414), unsupported versions (505) and malformed request lines (400). Each worker then runs a keep-alive loop on its connection. The fiddly part is what happens after each response:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/conn.c</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>if (io_err || !keep) {
+    /* Unread input (error, or pipelined requests we won't serve)
+     * would turn our close into a RST: drain it first. */
+    linger = !io_err &amp;&amp; (status &gt;= 400 || (size_t)hdr_len &lt; used);
+    break;
+}
+/* Keep-alive: slide any pipelined bytes to the front of the buffer. */
+used -= (size_t)hdr_len;
+memmove(b-&gt;rx, b-&gt;rx + hdr_len, used);</code></pre>
+					</div>
+					<p>Two subtle things are handled here. If a client sent several requests at once (pipelining), the leftover bytes are the start of the next request, so they're moved to the front of the buffer. And closing a socket that still has unread data makes the OS send a reset (RST), which can wipe out an error response before the client reads it. So the server drains the remaining input before closing (a "lingering close").</p>
+					<div class="gallery">
+						<figure class="gallery--wide">
+							<button type="button" class="contain"><img src="../images/projects/c-http-server/server-log.jpg" alt="Terminal output: server startup, access log lines with 200, 304, 404, 403, 405, 400 and 431 responses, and shutdown statistics" loading="lazy" /></button>
+							<figcaption>Real server output: the access log shows 200, 304, 404, 403 (traversal attempt), 405, 400 and 431 responses, followed by the graceful-shutdown statistics.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="security" class="reveal">
+					<h2><span class="num">05</span> Path traversal</h2>
+					<p>The classic static-server bug is <code>GET /../../secret</code>. Attackers disguise it with encodings like <code>%2e%2e/</code>, backslashes, or Windows quirks. My rule: <strong>decode first, then check every path segment</strong>, and reject anything unusual rather than trying to clean it up:</p>
+					<div class="code">
+						<div class="code__bar"><span class="code__file"><span class="code__dots"><i></i><i></i><i></i></span>src/fileserve.c</span><button class="code__copy" type="button">Copy</button></div>
+<pre><code>static int segment_ok(const char *seg, size_t n)
+{
+    size_t i;
+    if (seg[0] == '.')
+        return 0; /* "..", and hidden files such as .git or .env */
+    if (seg[n - 1] == '.' || seg[n - 1] == ' ')
+        return 0; /* Windows silently strips these: "index.html." == "index.html" */
+    for (i = 0; i &lt; n; i++) {
+        unsigned char c = (unsigned char)seg[i];
+        if (c &lt; 0x20 || c == 0x7f)
+            return 0; /* control characters */
+        if (strchr("\\:*?\"&lt;&gt;|", c) != NULL)
+            return 0; /* '\' is a separator on Windows; ':' = drives/streams; wildcards */
+    }
+    return !is_device_name(seg, n);
+}</code></pre>
+					</div>
+					<p>The integration tests try 11 variants (encoded dots, mixed separators, NUL bytes, trailing dots, device names like <code>CON</code>), and every one gets a 403.</p>
+				</section>
+
+				<section id="testing" class="reveal">
+					<h2><span class="num">06</span> Testing</h2>
+					<ul class="cs-list">
+						<li><strong>163 unit checks</strong> in a small C test runner: the parser, percent-decoding, the path checks, MIME types, and the queue under several threads at once.</li>
+						<li><strong>21 integration tests</strong> (Python standard library only) start the real server and send real requests: status codes, HEAD, 304s, keep-alive, pipelining, HTTP/1.0, idle timeout, 50 parallel clients, 503 back-pressure and graceful shutdown.</li>
+						<li>The build runs with warnings treated as errors, and <code>cppcheck</code>, a static analyser, reports nothing.</li>
+						<li>A GitHub Actions workflow is set up to build and test on Ubuntu (including AddressSanitizer and UndefinedBehaviorSanitizer, which catch memory bugs) and on Windows. So far everything has been built and tested on Windows only.</li>
+					</ul>
+				</section>
+
+				<section id="benchmarks" class="reveal">
+					<h2><span class="num">07</span> Benchmarks</h2>
+					<p>I wrote <code>bench</code>, a load generator in C. It opens <em>c</em> concurrent connections, sends <em>n</em> requests, and reports requests per second and latency percentiles (p50/p90/p99). Each result is the median of 3 runs at 32 concurrent connections and 20,000 requests, on a 4-core i7-7700K over loopback:</p>
+					<div class="table-wrap">
+						<table>
+							<thead><tr><th>File</th><th>Keep-alive</th><th>1 worker</th><th>2</th><th>4</th><th>8</th></tr></thead>
+							<tbody>
+								<tr><td>1 KiB</td><td>off</td><td>3,237</td><td>5,043</td><td>5,472</td><td>5,907</td></tr>
+								<tr><td>1 KiB</td><td>on</td><td>4,137</td><td>7,201</td><td>9,387</td><td>9,859</td></tr>
+								<tr><td>100 KiB</td><td>off</td><td>2,710</td><td>4,236</td><td>4,828</td><td>5,507</td></tr>
+								<tr><td>100 KiB</td><td>on</td><td>3,281</td><td>5,733</td><td>7,602</td><td>8,850</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p class="code__note">Requests per second. The load tester and the server share the same 4-core CPU, so these numbers show relative scaling, not absolute capacity.</p>
+					<h3>What the numbers say</h3>
+					<ul class="cs-list">
+						<li><strong>Keep-alive adds up to 67% throughput.</strong> Without it, every request pays for a new TCP handshake, and that cost dominates for small files.</li>
+						<li><strong>Diminishing returns after 4 workers</strong>, which matches the 4 physical cores. The benchmark client competes for the same CPU.</li>
+						<li><strong>The design's weak spot shows up in the worst-case latency.</strong> With keep-alive, a worker stays with one connection until it closes. With 32 connections and fewer workers, connections wait their turn, so p99 latency reaches 96–441 ms while the median stays under 1 ms. A simple queueing model predicted the worst case to within 10% (710 ms predicted vs 771 ms measured with 1 worker).</li>
+					</ul>
+					<div class="callout"><i class="fas fa-lightbulb" aria-hidden="true"></i><p>That tail latency is why production servers like nginx use an <strong>event loop</strong> (<code>epoll</code>/<code>IOCP</code>), where one thread juggles many idle connections. It's the clear next step for this project.</p></div>
+					<div class="gallery">
+						<figure>
+							<button type="button" class="contain"><img src="../images/projects/c-http-server/bench-output.jpg" alt="Terminal output of two bench runs with requests per second and latency percentiles" loading="lazy" /></button>
+							<figcaption>Real <code>bench</code> output: about 10,000 requests/s with keep-alive, and latency percentiles.</figcaption>
+						</figure>
+						<figure>
+							<button type="button"><img src="../images/projects/c-http-server/demo-page.jpg" alt="Demo page served by tinyhttpd showing live server statistics" loading="lazy" /></button>
+							<figcaption>The demo page, served by tinyhttpd, polls <code>/__stats</code> and shows live server counters.</figcaption>
+						</figure>
+					</div>
+				</section>
+
+				<section id="learned" class="reveal">
+					<h2><span class="num">08</span> What I learned</h2>
+					<ul class="cs-list">
+						<li>Condition variables, wake-up order and shutdown coordination are where concurrency bugs hide. Testing the queue with many threads at once was worth it.</li>
+						<li>The network has many edge cases: partial reads, pipelined bytes, resets when closing with unread data, and clients that send nothing at all.</li>
+						<li>Security in file paths comes from rejecting anything unexpected, not from trying to clean it up.</li>
+						<li>Measure, then explain. The benchmarks showed exactly where the thread-per-connection design breaks down, which tells me what to build next.</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+
+		<nav class="container cs-next" aria-label="More projects">
+			<a href="pet-monitor-live.html"><small>← Previous</small><strong>Pet Monitor Live</strong></a>
+			<a href="mips-simulator.html"><small>Next →</small><strong>MIPS Emulator</strong></a>
+		</nav>
+	</main>
+
+	<footer class="footer">
+		<div class="container footer__inner">
+			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
+			<a href="#main" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
+		</div>
+	</footer>
+
+	<script src="../assets/js/site.js"></script>
+</body>
+</html>

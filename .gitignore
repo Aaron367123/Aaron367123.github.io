@@ -24,3 +24,6 @@ assets/js/util.js
 # Original full-size photos (the site uses the optimised copies in images/web and images/projects)
 /images/*.jpg
 /images/*.png
+
+# Design prototypes (local only)
+/design-options/

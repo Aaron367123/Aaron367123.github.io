@@ -17,458 +17,871 @@
 	<meta property="og:image:height" content="630" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<!-- /social -->
-	<meta name="theme-color" content="#07110c" />
-	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%2307110c'/><g fill='%23e0a458'><rect x='2' y='18' width='10' height='4' rx='1'/><rect x='2' y='30' width='10' height='4' rx='1'/><rect x='2' y='42' width='10' height='4' rx='1'/><rect x='52' y='18' width='10' height='4' rx='1'/><rect x='52' y='30' width='10' height='4' rx='1'/><rect x='52' y='42' width='10' height='4' rx='1'/></g><rect x='12' y='10' width='40' height='44' rx='4' fill='%2313261d' stroke='%23e0a458' stroke-width='2'/><circle cx='19' cy='17' r='2.5' fill='%233ee08f'/><text x='32' y='40' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%23e8f0ea'>AJ</text></svg>" />
+	<meta name="theme-color" content="#0b1322" />
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230b1322'/><text x='32' y='42' text-anchor='middle' font-family='monospace' font-weight='700' font-size='26' fill='%235eead4'>AJ</text></svg>" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" href="assets/css/fontawesome-all.min.css" />
-	<link rel="stylesheet" href="assets/css/style.css" />
-	<link rel="stylesheet" href="assets/css/board.css" />
 	<script>
-		/* Apply saved theme before paint to avoid a flash */
-		document.documentElement.classList.add('js');
-		try { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+		/* Honour a theme the visitor already chose on the main site (same localStorage key). */
+		try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
 	</script>
+	<style>
+		/* ---------- Tokens ---------- */
+		:root {
+			--bg: #0b1322;
+			--bg-raise: #111b2e;
+			--line: #1f2b42;
+			--text: #a9b6cb;
+			--muted: #8593aa;
+			--head: #e6edf7;
+			--accent: #5eead4;
+			--accent-soft: rgba(94, 234, 212, 0.1);
+			--accent-line: rgba(94, 234, 212, 0.35);
+			--spot: rgba(94, 234, 212, 0.065);
+			--hover-bg: rgba(148, 170, 210, 0.06);
+			--shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px -18px rgba(0, 0, 0, 0.8);
+			--sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+			--mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+			color-scheme: dark;
+		}
+		:root[data-theme="light"] {
+			--bg: #f6f8fb;
+			--bg-raise: #ffffff;
+			--line: #dde3ec;
+			--text: #3b4658;
+			--muted: #5a6578;
+			--head: #0f172a;
+			--accent: #0f766e;
+			--accent-soft: rgba(15, 118, 110, 0.09);
+			--accent-line: rgba(15, 118, 110, 0.35);
+			--spot: rgba(15, 118, 110, 0.06);
+			--hover-bg: rgba(15, 23, 42, 0.035);
+			--shadow: 0 10px 30px -20px rgba(15, 23, 42, 0.35);
+			color-scheme: light;
+		}
+
+		/* ---------- Base ---------- */
+		*, *::before, *::after { box-sizing: border-box; }
+		html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: var(--sans);
+			font-size: 1rem;
+			line-height: 1.65;
+			-webkit-font-smoothing: antialiased;
+			overflow-x: hidden;
+		}
+		img { display: block; max-width: 100%; height: auto; }
+		a { color: inherit; text-decoration: none; }
+		p { margin: 0 0 1rem; }
+		ul, ol { margin: 0; padding: 0; list-style: none; }
+		h1, h2, h3, h4 { color: var(--head); margin: 0; line-height: 1.2; }
+		strong { color: var(--head); font-weight: 600; }
+		::selection { background: var(--accent); color: var(--bg); }
+
+		:focus { outline: none; }
+		:focus-visible {
+			outline: 2px solid var(--accent);
+			outline-offset: 3px;
+			border-radius: 4px;
+		}
+
+		.sr-only {
+			position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+			overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+		}
+		.skip-link {
+			position: fixed; left: 16px; top: 16px; z-index: 100;
+			padding: 10px 16px; border-radius: 6px;
+			background: var(--accent); color: var(--bg);
+			font-weight: 600; font-size: 0.9rem;
+			transform: translateY(-160%);
+			transition: transform 0.15s ease;
+		}
+		.skip-link:focus { transform: none; }
+
+		.inline-link {
+			color: var(--head);
+			font-weight: 500;
+			background-image: linear-gradient(var(--accent), var(--accent));
+			background-size: 0% 1px;
+			background-position: 0 100%;
+			background-repeat: no-repeat;
+			transition: background-size 0.25s ease, color 0.2s ease;
+		}
+		.inline-link:hover, .inline-link:focus-visible { color: var(--accent); background-size: 100% 1px; }
+
+		/* ---------- Cursor spotlight (desktop, motion OK) ---------- */
+		.spotlight {
+			position: fixed; inset: 0; z-index: 0; pointer-events: none;
+			opacity: 0;
+			transition: opacity 0.4s ease;
+			background: radial-gradient(600px circle at var(--x, 50%) var(--y, 50%), var(--spot), transparent 70%);
+		}
+		.spotlight.is-on { opacity: 1; }
+
+		/* ---------- Layout ---------- */
+		.shell {
+			position: relative; z-index: 1;
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: 0 16px;
+		}
+		.side { padding: 56px 0 8px; }
+		.content { padding-bottom: 72px; }
+
+		@media (min-width: 640px) {
+			.shell { padding: 0 32px; }
+			.side { padding-top: 80px; }
+		}
+		@media (min-width: 1024px) {
+			.shell {
+				padding: 0 48px;
+				display: grid;
+				grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+				gap: 64px;
+			}
+			.side {
+				position: sticky; top: 0;
+				height: 100vh;
+				max-height: 100vh;
+				overflow-y: auto;
+				scrollbar-width: none;
+				display: flex; flex-direction: column; justify-content: space-between;
+				padding: 88px 0 48px;
+			}
+			.side::-webkit-scrollbar { display: none; }
+			.content { padding: 88px 0 96px; }
+		}
+		@media (min-width: 1280px) {
+			.shell { gap: 96px; }
+		}
+
+		/* ---------- Left column ---------- */
+		.side__name {
+			font-size: clamp(2.25rem, 7vw, 3.25rem);
+			font-weight: 700;
+			letter-spacing: -0.025em;
+			line-height: 1.05;
+		}
+		.side__name a:hover { color: var(--head); }
+		.side__role {
+			margin: 14px 0 0;
+			font-size: 1.15rem;
+			font-weight: 500;
+			color: var(--head);
+			letter-spacing: -0.005em;
+		}
+		.side__pitch { margin: 16px 0 0; max-width: 24rem; color: var(--text); }
+		.status {
+			display: inline-flex; align-items: flex-start; gap: 10px;
+			margin: 20px 0 0;
+			font-family: var(--mono);
+			font-size: 0.75rem;
+			letter-spacing: 0.01em;
+			color: var(--muted);
+			line-height: 1.5;
+		}
+		.status__dot {
+			position: relative; flex: none;
+			width: 8px; height: 8px; margin-top: 4px;
+			border-radius: 50%;
+			background: var(--accent);
+		}
+		.status__dot::after {
+			content: ""; position: absolute; inset: -4px; border-radius: 50%;
+			border: 1px solid var(--accent);
+			opacity: 0;
+			animation: ping 2.4s ease-out infinite;
+		}
+		@keyframes ping { 0% { transform: scale(0.6); opacity: 0.8; } 80%, 100% { transform: scale(1.6); opacity: 0; } }
+
+		/* Section nav (desktop only) */
+		.toc { display: none; }
+		@media (min-width: 1024px) {
+			.toc { display: block; margin-top: 48px; }
+			.toc a {
+				display: inline-flex; align-items: center; gap: 16px;
+				padding: 10px 0;
+				font-family: var(--mono);
+				font-size: 0.75rem;
+				font-weight: 500;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+				color: var(--muted);
+				transition: color 0.2s ease;
+			}
+			.toc a::before {
+				content: ""; display: block;
+				width: 32px; height: 1px;
+				background: currentColor;
+				transition: width 0.25s ease, background-color 0.2s ease;
+			}
+			.toc a:hover, .toc a:focus-visible { color: var(--head); }
+			.toc a:hover::before, .toc a:focus-visible::before { width: 64px; }
+			.toc a.is-active { color: var(--head); }
+			.toc a.is-active::before { width: 64px; background: var(--accent); }
+		}
+
+		.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+		.btn {
+			display: inline-flex; align-items: center; gap: 8px;
+			padding: 10px 18px;
+			border-radius: 6px;
+			border: 1px solid var(--accent);
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.2;
+			transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+		}
+		.btn--solid { background: var(--accent); color: var(--bg); }
+		.btn--solid:hover { background: transparent; color: var(--accent); }
+		.btn--ghost { color: var(--accent); }
+		.btn--ghost:hover { background: var(--accent-soft); }
+		.btn:active { transform: translateY(1px); }
+
+		.socials { display: flex; gap: 6px; margin-top: 24px; margin-left: -10px; }
+		.socials a {
+			display: grid; place-items: center;
+			width: 44px; height: 44px;
+			font-size: 1.25rem;
+			color: var(--muted);
+			border-radius: 8px;
+			transition: color 0.2s ease, transform 0.2s ease;
+		}
+		.socials a:hover, .socials a:focus-visible { color: var(--accent); transform: translateY(-2px); }
+
+		/* ---------- Mobile top bar ---------- */
+		.topbar {
+			position: sticky; top: 0; z-index: 20;
+			background: color-mix(in srgb, var(--bg) 88%, transparent);
+			-webkit-backdrop-filter: blur(10px);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid var(--line);
+		}
+		@supports not (background: color-mix(in srgb, red 50%, blue)) {
+			.topbar { background: var(--bg); }
+		}
+		.topbar__inner {
+			display: flex; align-items: center; justify-content: space-between; gap: 12px;
+			max-width: 1240px; margin: 0 auto;
+			padding: 0 16px;
+			height: 52px;
+		}
+		.topbar__mark {
+			flex: none;
+			font-family: var(--mono); font-weight: 500; font-size: 0.85rem;
+			color: var(--head);
+		}
+		.topbar__mark span { color: var(--accent); }
+		.topbar nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+		.topbar nav::-webkit-scrollbar { display: none; }
+		.topbar ul { display: flex; gap: 2px; }
+		.topbar nav a {
+			display: block;
+			padding: 8px 8px;
+			font-family: var(--mono);
+			font-size: 0.72rem;
+			letter-spacing: 0.04em;
+			color: var(--muted);
+			white-space: nowrap;
+			border-radius: 6px;
+			position: relative;
+		}
+		.topbar nav a.is-active { color: var(--accent); }
+		.topbar nav a.is-active::after {
+			content: ""; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 1px; background: var(--accent);
+		}
+		@media (min-width: 640px) { .topbar__inner { padding: 0 32px; } .topbar nav a { padding: 8px 12px; font-size: 0.78rem; } .topbar nav a.is-active::after { left: 12px; right: 12px; } }
+		@media (min-width: 1024px) { .topbar { display: none; } }
+		@media (max-width: 399px) { .topbar__inner { gap: 6px; } .topbar nav a { padding: 8px 5px; letter-spacing: 0; } .topbar nav a.is-active::after { left: 5px; right: 5px; } }
+
+		/* ---------- Right column sections ---------- */
+		.section { scroll-margin-top: 72px; padding-top: 72px; }
+		.section:first-child { padding-top: 48px; }
+		@media (min-width: 1024px) {
+			.section { scroll-margin-top: 0; padding-top: 0; margin-bottom: 128px; }
+			.section:first-child { padding-top: 0; }
+			.section:last-of-type { margin-bottom: 64px; }
+		}
+		.section__label {
+			display: flex; align-items: center; gap: 14px;
+			margin-bottom: 28px;
+			font-family: var(--mono);
+			font-size: 0.75rem;
+			font-weight: 500;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: var(--head);
+		}
+		.section__label span { color: var(--accent); }
+		.section__label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+		.content p { max-width: 40rem; }
+
+		/* About */
+		.stats {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1px;
+			margin-top: 32px;
+			background: var(--line);
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			overflow: hidden;
+		}
+		@media (min-width: 640px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+		.stat { background: var(--bg); padding: 18px 16px; display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+		.stat__num {
+			display: block; margin: 0;
+			font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em;
+			color: var(--head);
+			font-variant-numeric: tabular-nums;
+		}
+		.stat__label {
+			display: block; margin-top: 4px;
+			font-family: var(--mono); font-size: 0.7rem; line-height: 1.45;
+			color: var(--muted);
+		}
+
+		/* Experience timeline */
+		.org { margin-bottom: 8px; }
+		.org__head {
+			display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px;
+			margin-bottom: 20px;
+		}
+		.org__name { font-size: 1.2rem; font-weight: 600; }
+		.when {
+			font-family: var(--mono); font-size: 0.75rem;
+			color: var(--muted); white-space: nowrap;
+		}
+		.timeline { position: relative; padding-left: 28px; }
+		.timeline::before {
+			content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px;
+			width: 1px; background: var(--line);
+		}
+		.role { position: relative; padding: 0 0 28px; }
+		.role:last-child { padding-bottom: 0; }
+		.role::before {
+			content: ""; position: absolute; left: -28px; top: 7px;
+			width: 11px; height: 11px; border-radius: 50%;
+			background: var(--bg);
+			border: 2px solid var(--line);
+		}
+		.role.is-current::before { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+		.role__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
+		.role__title { font-size: 1rem; font-weight: 600; }
+		.role.is-current .role__title { color: var(--head); }
+		.role__now {
+			display: inline-block; margin-left: 8px; padding: 1px 8px;
+			border-radius: 999px;
+			background: var(--accent-soft); color: var(--accent);
+			font-family: var(--mono); font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em;
+			vertical-align: 2px;
+		}
+		.role ul { margin-top: 10px; }
+		.role li, .edu li { position: relative; padding-left: 18px; margin-bottom: 6px; font-size: 0.95rem; }
+		.role li::before, .edu li::before {
+			content: ""; position: absolute; left: 2px; top: 0.72em;
+			width: 6px; height: 1px; background: var(--accent);
+		}
+
+		.subhead {
+			margin: 48px 0 16px;
+			font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+			letter-spacing: 0.14em; text-transform: uppercase;
+			color: var(--muted);
+		}
+		.edu {
+			padding: 20px;
+			border: 1px solid var(--line);
+			border-radius: 10px;
+		}
+		.edu__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; }
+		.edu__title { font-size: 1rem; font-weight: 600; }
+		.edu__where { margin: 2px 0 10px; color: var(--muted); font-size: 0.9rem; }
+		.edu li { margin: 0; }
+
+		/* Projects */
+		.projects { display: grid; gap: 8px; }
+		.proj {
+			position: relative;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 14px;
+			padding: 16px;
+			margin: 0 -16px;
+			border-radius: 10px;
+			border: 1px solid transparent;
+			transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+		}
+		@media (min-width: 560px) {
+			.proj { grid-template-columns: 150px minmax(0, 1fr); gap: 20px; }
+		}
+		@media (min-width: 1280px) {
+			.proj { grid-template-columns: 170px minmax(0, 1fr); gap: 24px; padding: 20px; margin: 0 -20px; }
+		}
+		.proj__thumb {
+			order: 0;
+			aspect-ratio: 16 / 10;
+			max-width: 240px;
+			border-radius: 6px;
+			overflow: hidden;
+			border: 1px solid var(--line);
+			background: var(--bg-raise);
+			transition: border-color 0.25s ease;
+		}
+		@media (min-width: 560px) { .proj__thumb { max-width: none; margin-top: 4px; } }
+		.proj__thumb img { width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+		.proj__thumb--contain img { object-fit: contain; object-position: center; background: #0b0f1a; }
+		.proj__title { font-size: 1.05rem; font-weight: 600; line-height: 1.35; }
+		.proj__link { transition: color 0.2s ease; }
+		.proj__link::after { content: ""; position: absolute; inset: 0; border-radius: 10px; z-index: 1; }
+		.proj__arrow {
+			display: inline-block; margin-left: 4px;
+			font-size: 0.75em;
+			transform: rotate(-45deg);
+			transition: transform 0.2s ease;
+		}
+		.badge {
+			display: inline-flex; align-items: center; gap: 6px;
+			margin-left: 8px; padding: 2px 9px;
+			border-radius: 999px;
+			border: 1px solid var(--accent-line);
+			color: var(--accent);
+			font-family: var(--mono); font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em;
+			vertical-align: 2px; white-space: nowrap;
+		}
+		.badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+		.proj__desc { margin: 8px 0 0; font-size: 0.925rem; line-height: 1.6; }
+		.proj__desc .to { color: var(--accent); font-weight: 600; padding: 0 2px; }
+		.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+		.tags li {
+			padding: 3px 10px;
+			border-radius: 999px;
+			background: var(--accent-soft);
+			color: var(--accent);
+			font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+			line-height: 1.5;
+		}
+		.proj:hover, .proj:focus-within {
+			background: var(--hover-bg);
+			border-color: var(--line);
+			box-shadow: var(--shadow);
+		}
+		.proj:hover .proj__link, .proj:focus-within .proj__link { color: var(--accent); }
+		.proj:hover .proj__arrow, .proj:focus-within .proj__arrow { transform: rotate(-45deg) translate(2px, 0); }
+		.proj:hover .proj__thumb, .proj:focus-within .proj__thumb { border-color: var(--accent-line); }
+		.proj:focus-within { outline: none; }
+		.proj__link:focus-visible { outline: none; }
+		.proj__link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: 2px; }
+		@media (hover: hover) and (pointer: fine) {
+			.proj:hover { transform: translateY(-2px); }
+			.projects:hover .proj:not(:hover) { opacity: 0.5; }
+		}
+		.projects:focus-within .proj:not(:focus-within) { opacity: 0.55; }
+
+		.all-link {
+			display: inline-flex; align-items: center; gap: 8px;
+			margin-top: 28px;
+			font-weight: 600; font-size: 0.95rem; color: var(--head);
+		}
+		.all-link i { color: var(--accent); transition: transform 0.2s ease; }
+		.all-link:hover i { transform: translateX(4px); }
+
+		/* Earlier work */
+		.earlier { border-top: 1px solid var(--line); }
+		.earlier li { border-bottom: 1px solid var(--line); }
+		.earlier a {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 2px 16px;
+			padding: 14px 4px;
+			transition: background-color 0.2s ease;
+		}
+		.earlier a:hover, .earlier a:focus-visible { background: var(--hover-bg); }
+		.earlier__name { color: var(--head); font-weight: 500; font-size: 0.95rem; }
+		.earlier a:hover .earlier__name { color: var(--accent); }
+		.earlier__live {
+			margin-left: 6px;
+			font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.04em;
+			color: var(--accent); white-space: nowrap;
+		}
+		.earlier__tags {
+			grid-column: 2; grid-row: 1;
+			align-self: center;
+			font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+			text-align: right; white-space: nowrap;
+		}
+		.earlier__desc { grid-column: 1 / -1; font-size: 0.85rem; color: var(--muted); }
+		@media (max-width: 479px) {
+			.earlier__tags { grid-column: 1 / -1; grid-row: auto; text-align: left; white-space: normal; }
+		}
+
+		/* Contact */
+		.contact__title { font-size: clamp(1.6rem, 4vw, 2rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+		.contact__list { display: grid; gap: 0; margin-top: 28px; border-top: 1px solid var(--line); }
+		@media (min-width: 640px) { .contact__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; } }
+		.contact__list a {
+			display: flex; align-items: center; gap: 14px;
+			padding: 14px 4px;
+			border-bottom: 1px solid var(--line);
+			transition: background-color 0.2s ease;
+			min-width: 0;
+		}
+		.contact__list a:hover, .contact__list a:focus-visible { background: var(--hover-bg); }
+		.contact__list i { width: 20px; text-align: center; color: var(--accent); flex: none; }
+		.contact__list span { min-width: 0; overflow-wrap: anywhere; }
+		.contact__list small {
+			display: block;
+			font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+			color: var(--muted);
+		}
+		.contact__list b { font-weight: 500; color: var(--head); font-size: 0.925rem; }
+
+		.foot {
+			margin-top: 64px;
+			font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+		}
+
+
+		/* Theme toggle */
+		.theme-btn {
+			display: grid; place-items: center;
+			width: 44px; height: 44px;
+			border: 0; background: none; cursor: pointer;
+			font-size: 1.1rem; color: var(--muted);
+			border-radius: 8px;
+			transition: color 0.2s ease, transform 0.2s ease;
+		}
+		.theme-btn:hover, .theme-btn:focus-visible { color: var(--accent); transform: translateY(-2px); }
+		.topbar .theme-btn { width: 36px; height: 36px; flex: none; font-size: 0.95rem; }
+		.topbar__end { display: flex; align-items: center; min-width: 0; gap: 4px; }
+
+		/* Toolkit */
+		.toolkit { display: grid; gap: 18px; margin-top: 40px; }
+		@media (min-width: 640px) { .toolkit { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 28px; } }
+		.toolkit h3 {
+			margin: 0 0 8px;
+			font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+			letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+		}
+		.toolkit .tags { margin-top: 0; }
+
+		/* ---------- Reduced motion ---------- */
+		@media (prefers-reduced-motion: reduce) {
+			html { scroll-behavior: auto; }
+			*, *::before, *::after {
+				animation-duration: 0.01ms !important;
+				animation-iteration-count: 1 !important;
+				transition-duration: 0.01ms !important;
+			}
+			.spotlight { display: none; }
+			.proj:hover { transform: none; }
+		}
+	</style>
 </head>
 <body>
+	<a class="skip-link" href="#content">Skip to content</a>
+	<div class="spotlight" aria-hidden="true"></div>
 
-	<a class="skip-link" href="#main">Skip to content</a>
-
-	<!-- Navigation -->
-	<header class="nav" id="nav">
-		<div class="container nav__inner">
-			<a href="#top" class="nav__logo" aria-label="Back to top">
-				<span class="nav__logo-mark">AJ</span>
-				<span class="nav__logo-text">Aaron Jara</span>
-			</a>
-			<nav class="nav__links" id="nav-links" aria-label="Primary">
-				<a href="#about">About</a>
-				<a href="#skills">Skills</a>
-				<a href="#projects">Projects</a>
-				<a href="#contact">Contact</a>
-				<a href="resume.html" class="nav__resume">Resume</a>
-			</nav>
-			<div class="nav__actions">
-				<button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">
-					<i class="fas fa-moon" aria-hidden="true"></i>
-				</button>
-				<button class="icon-btn nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
-					<i class="fas fa-bars" aria-hidden="true"></i>
-				</button>
+	<!-- Mobile / tablet only: compact sticky bar -->
+	<header class="topbar">
+		<div class="topbar__inner">
+			<a class="topbar__mark" href="#top">AJ<span>.</span></a>
+			<div class="topbar__end">
+			<nav aria-label="Sections (compact)">
+					<ul>
+						<li><a href="#about" data-nav="about">About</a></li>
+						<li><a href="#experience" data-nav="experience">Experience</a></li>
+						<li><a href="#projects" data-nav="projects">Projects</a></li>
+						<li><a href="#contact" data-nav="contact">Contact</a></li>
+					</ul>
+				</nav>
+				<button class="theme-btn" type="button" data-theme-toggle aria-label="Switch to light theme"><i class="fas fa-sun" aria-hidden="true"></i></button>
 			</div>
 		</div>
 	</header>
 
-	<!-- Scroll "bus": a copper trace that fills as you scroll, with a via per section -->
-	<nav class="bus" aria-label="Page sections">
-		<div class="bus__track"><div class="bus__fill"></div></div>
-		<a class="bus__via" href="#top" data-target="top"><span>PWR</span></a>
-		<a class="bus__via" href="#about" data-target="about"><span>J1 About</span></a>
-		<a class="bus__via" href="#skills" data-target="skills"><span>J2 Skills</span></a>
-		<a class="bus__via" href="#projects" data-target="projects"><span>J3 Projects</span></a>
-		<a class="bus__via" href="#contact" data-target="contact"><span>J4 Contact</span></a>
-	</nav>
+	<div class="shell">
+		<!-- Left: identity (sticky on desktop) -->
+		<header class="side" id="top">
+			<div>
+				<h1 class="side__name"><a href="#top">Aaron Morris Jara</a></h1>
+				<p class="side__role">Data Migration Specialist · Software Developer</p>
+				<p class="side__pitch">I move client data into new systems accurately at Boomerangfx, and build tested software, from an HTTP server in C to a neural network from scratch.</p>
+				<p class="status"><span class="status__dot" aria-hidden="true"></span><span>Open to work · Toronto area · <span style="white-space:nowrap">remote / on-site / hybrid</span></span></p>
 
-	<main id="main">
-
-		<!-- Hero -->
-		<section class="hero" id="top">
-			<div class="hero__bg" aria-hidden="true">
-				<span class="blob blob--1"></span>
-				<span class="blob blob--2"></span>
+				<nav class="toc" aria-label="Sections">
+					<ul>
+						<li><a href="#about" data-nav="about">About</a></li>
+						<li><a href="#experience" data-nav="experience">Experience</a></li>
+						<li><a href="#projects" data-nav="projects">Projects</a></li>
+						<li><a href="#contact" data-nav="contact">Contact</a></li>
+					</ul>
+				</nav>
 			</div>
-			<div class="container hero__grid">
-				<div class="hero__inner">
-					<p class="eyebrow reveal"><span class="led" aria-hidden="true"></span> Open to work · Toronto area · remote / on-site / hybrid</p>
-					<p class="silk reveal">U1 · Software developer · Computer Engineering Technology grad</p>
-					<h1 class="hero__title reveal">
-						Hi, I'm <span class="gradient-text">Aaron Morris Jara</span>.
-					</h1>
-					<p class="hero__subtitle reveal">
-						I build <span class="typed" id="typed" aria-live="polite">IoT devices</span><span class="caret" aria-hidden="true"></span>
-					</p>
-					<p class="hero__lead reveal">
-						I'm looking for <strong>systems/backend</strong>, <strong>full-stack</strong> and <strong>ML/data</strong> roles. I build from the circuit board up: an HTTP server in C, a compiler and CPU emulator, a neural network from scratch, and real-time IoT dashboards, each with tests and a live demo.
-					</p>
-					<p class="hero__now reveal"><span class="hero__now-label">Currently</span> Data Migration Specialist at Boomerangfx</p>
-					<div class="hero__cta reveal">
-						<a href="#projects" class="btn btn--primary">View my work <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-						<a href="resume.html" class="btn btn--ghost"><i class="fas fa-file-alt" aria-hidden="true"></i> Resume</a>
-						<a href="#contact" class="btn btn--ghost">Get in touch</a>
+
+			<div>
+				<div class="cta">
+					<a class="btn btn--solid" href="resume.html"><i class="fas fa-file-alt" aria-hidden="true"></i> Resume</a>
+					<a class="btn btn--ghost" href="assets/Aaron-Morris-Jara-Resume.pdf" download><i class="fas fa-download" aria-hidden="true"></i> Download PDF</a>
+				</div>
+				<ul class="socials" aria-label="Elsewhere">
+					<li><a href="https://github.com/Aaron367123" target="_blank" rel="noopener" aria-label="GitHub (opens in a new tab)"><i class="fab fa-github" aria-hidden="true"></i></a></li>
+					<li><a href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener" aria-label="LinkedIn (opens in a new tab)"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a></li>
+					<li><a href="mailto:aaronjara367@gmail.com" aria-label="Email aaronjara367@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
+					<li><button class="theme-btn" type="button" data-theme-toggle aria-label="Switch to light theme"><i class="fas fa-sun" aria-hidden="true"></i></button></li>
+				</ul>
+			</div>
+		</header>
+
+		<!-- Right: scrolling content -->
+		<main class="content" id="content" tabindex="-1">
+
+			<section class="section" id="about" aria-labelledby="about-h">
+				<h2 class="section__label" id="about-h"><span>01</span> About</h2>
+				<p>I'm a Data Migration Specialist at <strong>Boomerangfx</strong>. I map client and legacy data to the platform's data model, write <strong>SQL and Python</strong> to extract, clean, transform and load it, and validate every migration (reconciling record counts, spot-checking records, fixing mismatches) before handing it over.</p>
+				<p>I'm a Computer Engineering Technology graduate, and I'm happiest when a project crosses the line between hardware and software. Outside work I build projects in C, JavaScript and Python, each with tests. I'm looking for <strong>systems/backend</strong>, <strong>full-stack</strong> and <strong>ML/data</strong> roles.</p>
+				<dl class="stats">
+					<div class="stat"><dt class="stat__label">Projects with case studies</dt><dd class="stat__num">14</dd></div>
+					<div class="stat"><dt class="stat__label">Live demos you can run</dt><dd class="stat__num">7</dd></div>
+					<div class="stat"><dt class="stat__label">Languages</dt><dd class="stat__num">6</dd></div>
+					<div class="stat"><dt class="stat__label">Automated tests &amp; checks</dt><dd class="stat__num">5,328</dd></div>
+				</dl>
+
+				<div class="toolkit" id="skills" aria-label="Toolkit">
+					<div><h3>Data</h3><ul class="tags"><li>Data migration &amp; mapping</li><li>ETL</li><li>SQL</li><li>Validation &amp; reconciliation</li><li>Python scripting</li><li>Excel / CSV</li></ul></div>
+					<div><h3>Languages</h3><ul class="tags"><li>SQL</li><li>Python</li><li>C</li><li>Java</li><li>JavaScript</li><li>HTML / CSS</li></ul></div>
+					<div><h3>Systems &amp; web</h3><ul class="tags"><li>Node.js &amp; Express</li><li>REST APIs</li><li>SQLite</li><li>WebSockets</li><li>Firebase</li><li>Sockets &amp; HTTP</li><li>pthreads</li><li>Linux</li><li>Docker</li><li>Git</li></ul></div>
+					<div><h3>Hardware &amp; ML</h3><ul class="tags"><li>Raspberry Pi</li><li>I²C / GPIO sensors</li><li>KiCad PCB design</li><li>Digital logic</li><li>PID control</li><li>YOLOv8 / PyTorch</li><li>Neural nets from scratch</li><li>Metabase</li></ul></div>
+				</div>
+			</section>
+
+			<section class="section" id="experience" aria-labelledby="exp-h">
+				<h2 class="section__label" id="exp-h"><span>02</span> Experience</h2>
+
+				<div class="org">
+					<div class="org__head">
+						<h3 class="org__name">Boomerangfx</h3>
+						<span class="when">Mar 2026 – Present</span>
 					</div>
-					<ul class="socials reveal" aria-label="Social links">
-						<li><a href="https://github.com/Aaron367123" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
-						<li><a href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a></li>
-						<li><a href="mailto:aaronjara367@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
+					<ol class="timeline">
+						<li class="role is-current">
+							<div class="role__head">
+								<h4 class="role__title">Data Migration Specialist <span class="role__now">Now</span></h4>
+								<span class="when">Jun 2026 – Present</span>
+							</div>
+							<ul>
+								<li>Migrate client and legacy data into Boomerangfx, mapping source fields to the platform's data model and transforming formats to fit.</li>
+								<li>Write SQL queries and Python scripts to extract, clean, transform and load (ETL) client data, including CSV and Excel sources.</li>
+								<li>Validate each migration: reconcile record counts, spot-check records, and track down and fix mismatches.</li>
+							</ul>
+						</li>
+						<li class="role">
+							<div class="role__head">
+								<h4 class="role__title">EMR Specialist</h4>
+								<span class="when">Apr – Jun 2026</span>
+							</div>
+							<ul>
+								<li>Configured EMR charting and treatment templates and settings for client clinics.</li>
+								<li>Imported patient records and charts into the EMR, and investigated and resolved EMR issues reported by clients.</li>
+							</ul>
+						</li>
+						<li class="role">
+							<div class="role__head">
+								<h4 class="role__title">Forms Specialist</h4>
+								<span class="when">Mar – Apr 2026</span>
+							</div>
+							<ul>
+								<li>Built digital clinic forms (intake, consent, questionnaires) in the platform, converting clients' paper and PDF forms.</li>
+								<li>Reviewed and tested forms with clients, made requested changes, and resolved form issues.</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+
+				<h3 class="subhead">Education</h3>
+				<div class="edu">
+					<div class="edu__head">
+						<h4 class="edu__title">Computer Engineering Technology</h4>
+					</div>
+					<p class="edu__where">Humber College, Toronto</p>
+					<ul>
+						<li>Capstone: Smart Pet Monitor, a 4-sensor Raspberry Pi device with a custom PCB, Firebase and an Android app. I owned the I²C presence-detection sensor.</li>
 					</ul>
 				</div>
 
-				<!-- The "U1" chip: decorative SVG board. Traces draw in on load; small pulses travel along them. -->
-				<div class="hero__board reveal" aria-hidden="true">
-					<svg class="board" viewBox="0 0 520 440" focusable="false">
-						<defs>
-							<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-								<feGaussianBlur stdDeviation="3" result="b" />
-								<feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-							</filter>
-						</defs>
+				<a class="all-link" href="resume.html">View full resume <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+			</section>
 
-						<!-- traces: left (languages) -->
-						<g class="traces">
-							<path id="t1" class="trace" d="M160 152 H128 L72 96 H36" />
-							<path id="t2" class="trace" d="M160 180 H116 L96 160 H36" />
-							<path id="t3" class="trace" d="M160 208 H36" />
-							<path id="t4" class="trace" d="M160 236 H116 L96 256 H36" />
-							<path id="t5" class="trace" d="M160 264 H128 L72 320 H36" />
-							<!-- right (areas) -->
-							<path id="t6" class="trace" d="M360 152 H392 L448 96 H484" />
-							<path id="t7" class="trace" d="M360 180 H404 L424 160 H484" />
-							<path id="t8" class="trace" d="M360 208 H484" />
-							<path id="t9" class="trace" d="M360 236 H404 L424 256 H484" />
-							<path id="t10" class="trace" d="M360 264 H392 L448 320 H484" />
-							<!-- top -->
-							<path class="trace" d="M202 110 V28" />
-							<path class="trace" d="M230 110 V62" />
-							<path class="trace" d="M258 110 V28" />
-							<path class="trace" d="M286 110 V62" />
-							<path id="t11" class="trace" d="M314 110 V74 L342 46 H432" />
-							<!-- bottom -->
-							<path class="trace" d="M202 330 V412" />
-							<path id="t12" class="trace" d="M230 330 V372 L206 396 H112" />
-							<path class="trace" d="M258 330 V412" />
-							<path id="t13" class="trace" d="M286 330 V372 L310 396 H392" />
-							<path class="trace" d="M314 330 V412" />
-						</g>
+			<section class="section" id="projects" aria-labelledby="proj-h">
+				<h2 class="section__label" id="proj-h"><span>03</span> Projects</h2>
 
-						<!-- vias -->
-						<g class="vias">
-							<circle cx="30" cy="96" r="6" /><circle cx="30" cy="160" r="6" /><circle cx="30" cy="208" r="6" /><circle cx="30" cy="256" r="6" /><circle cx="30" cy="320" r="6" />
-							<circle cx="490" cy="96" r="6" /><circle cx="490" cy="160" r="6" /><circle cx="490" cy="208" r="6" /><circle cx="490" cy="256" r="6" /><circle cx="490" cy="320" r="6" />
-							<circle cx="202" cy="22" r="6" /><circle cx="230" cy="56" r="6" /><circle cx="258" cy="22" r="6" /><circle cx="286" cy="56" r="6" />
-							<circle cx="202" cy="418" r="6" /><circle cx="106" cy="396" r="6" /><circle cx="258" cy="418" r="6" /><circle cx="314" cy="418" r="6" />
-						</g>
-
-						<!-- silkscreen labels -->
-						<g class="silk-labels">
-							<text x="44" y="88">C</text>
-							<text x="44" y="152">PYTHON</text>
-							<text x="44" y="200">JAVA</text>
-							<text x="44" y="248">JAVASCRIPT</text>
-							<text x="44" y="312">SQL</text>
-							<text x="476" y="88" text-anchor="end">EMBEDDED</text>
-							<text x="476" y="152" text-anchor="end">SYSTEMS</text>
-							<text x="476" y="200" text-anchor="end">NETWORKING</text>
-							<text x="476" y="248" text-anchor="end">WEB</text>
-							<text x="476" y="312" text-anchor="end">ML</text>
-							<text x="122" y="386">R1 · 10K</text>
-							<text x="402" y="386">Y1 16MHZ</text>
-							<text x="440" y="36" text-anchor="middle">D1 PWR</text>
-						</g>
-
-						<!-- small parts -->
-						<g class="parts">
-							<!-- R1 on the bottom-left trace -->
-							<rect class="part-body" x="140" y="390" width="34" height="12" rx="3" />
-							<rect class="pad" x="132" y="390" width="10" height="12" rx="1.5" /><rect class="pad" x="172" y="390" width="10" height="12" rx="1.5" />
-							<!-- Y1 crystal -->
-							<rect class="part-body" x="392" y="386" width="40" height="20" rx="10" />
-							<!-- C1 capacitors on top traces -->
-							<rect class="pad" x="223" y="70" width="14" height="8" rx="1.5" /><rect class="pad" x="223" y="84" width="14" height="8" rx="1.5" />
-							<rect class="pad" x="279" y="70" width="14" height="8" rx="1.5" /><rect class="pad" x="279" y="84" width="14" height="8" rx="1.5" />
-							<!-- D1 LED -->
-							<circle class="led-halo" cx="440" cy="46" r="14" />
-							<circle class="led-dot" cx="440" cy="46" r="7" />
-						</g>
-
-						<!-- U1 package: pins, body, notch, markings -->
-						<g class="chip">
-							<g class="pins">
-								<rect x="150" y="147" width="20" height="10" rx="2" /><rect x="150" y="175" width="20" height="10" rx="2" /><rect x="150" y="203" width="20" height="10" rx="2" /><rect x="150" y="231" width="20" height="10" rx="2" /><rect x="150" y="259" width="20" height="10" rx="2" />
-								<rect x="350" y="147" width="20" height="10" rx="2" /><rect x="350" y="175" width="20" height="10" rx="2" /><rect x="350" y="203" width="20" height="10" rx="2" /><rect x="350" y="231" width="20" height="10" rx="2" /><rect x="350" y="259" width="20" height="10" rx="2" />
-								<rect x="197" y="104" width="10" height="20" rx="2" /><rect x="225" y="104" width="10" height="20" rx="2" /><rect x="253" y="104" width="10" height="20" rx="2" /><rect x="281" y="104" width="10" height="20" rx="2" /><rect x="309" y="104" width="10" height="20" rx="2" />
-								<rect x="197" y="316" width="10" height="20" rx="2" /><rect x="225" y="316" width="10" height="20" rx="2" /><rect x="253" y="316" width="10" height="20" rx="2" /><rect x="281" y="316" width="10" height="20" rx="2" /><rect x="309" y="316" width="10" height="20" rx="2" />
-							</g>
-							<rect class="chip-body" x="168" y="120" width="184" height="200" rx="10" />
-							<circle class="chip-notch" cx="260" cy="120" r="10" />
-							<circle class="chip-dot" cx="188" cy="140" r="4" />
-							<text class="chip-part" x="260" y="206" text-anchor="middle">AJ-2026</text>
-							<text class="chip-sub" x="260" y="230" text-anchor="middle">AARON M. JARA</text>
-							<text class="chip-fine" x="260" y="252" text-anchor="middle">COMPUTER ENG. TECH</text>
-							<text class="chip-fine" x="260" y="300" text-anchor="middle">REV 3.0 · TESTED</text>
-						</g>
-
-						<!-- signal pulses (hidden when reduced motion is preferred) -->
-						<g class="pulses">
-							<circle r="3.5"><animateMotion dur="2.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#t1" /></animateMotion></circle>
-							<circle r="3.5"><animateMotion dur="3.4s" begin="0.9s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#t4" /></animateMotion></circle>
-							<circle r="3.5"><animateMotion dur="2.6s" begin="0.4s" repeatCount="indefinite"><mpath href="#t7" /></animateMotion></circle>
-							<circle r="3.5"><animateMotion dur="3.2s" begin="1.6s" repeatCount="indefinite"><mpath href="#t10" /></animateMotion></circle>
-							<circle r="3.5"><animateMotion dur="2.2s" begin="0.2s" repeatCount="indefinite"><mpath href="#t11" /></animateMotion></circle>
-							<circle r="3.5"><animateMotion dur="3s" begin="1.2s" repeatCount="indefinite"><mpath href="#t13" /></animateMotion></circle>
-						</g>
-					</svg>
-				</div>
-			</div>
-			<a href="#about" class="scroll-hint" aria-label="Scroll to About"><span></span></a>
-		</section>
-
-		<!-- About -->
-		<section class="section" id="about">
-			<div class="container about">
-				<div class="about__text reveal">
-					<p class="section__kicker"><span class="kicker-ref">J1</span> About</p>
-					<h2 class="section__title">Curious about how things work, all the way down.</h2>
-					<p>
-						I'm a Computer Engineering Technology graduate, and I'm happiest when a project crosses the line between hardware and software:
-						wiring sensors to a Raspberry Pi, finishing a CPU emulator from my old lab code, writing an HTTP server in C, or training a neural network without any ML libraries.
-					</p>
-					<p>
-						I like projects where I get to learn something new, and I care about writing code that's clear, tested and easy for the next person to pick up.
-					</p>
-				</div>
-				<div class="about__stats reveal">
-					<div class="stat"><span class="stat__tp">TP1</span><span class="stat__num" data-count="14">14</span><span class="stat__label">Projects with case studies</span></div>
-					<div class="stat"><span class="stat__tp">TP2</span><span class="stat__num" data-count="7">7</span><span class="stat__label">Live demos you can run</span></div>
-					<div class="stat"><span class="stat__tp">TP3</span><span class="stat__num" data-count="6">6</span><span class="stat__label">Languages</span></div>
-					<div class="stat"><span class="stat__tp">TP4</span><span class="stat__num" data-count="5328">5,328</span><span class="stat__label">Automated tests &amp; checks</span></div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Skills -->
-		<section class="section section--alt" id="skills">
-			<div class="container">
-				<div class="section__head reveal">
-					<p class="section__kicker"><span class="kicker-ref">J2</span> Skills</p>
-					<h2 class="section__title">My toolkit</h2>
-				</div>
-				<div class="skills">
-					<article class="skill-card ic reveal" data-ref="U5 · LANG">
-						<div class="skill-card__icon"><i class="fas fa-code" aria-hidden="true"></i></div>
-						<h3>Languages</h3>
-						<ul class="chips">
-							<li>C</li><li>Python</li><li>Java</li><li>JavaScript</li><li>SQL</li><li>HTML</li><li>CSS</li>
-						</ul>
-					</article>
-					<article class="skill-card ic reveal" data-ref="U6 · HW/SYS">
-						<div class="skill-card__icon"><i class="fas fa-microchip" aria-hidden="true"></i></div>
-						<h3>Systems &amp; Hardware</h3>
-						<ul class="chips">
-							<li>Raspberry Pi</li><li>I²C / GPIO sensors</li><li>KiCad PCB design</li><li>Digital logic</li><li>MIPS architecture</li><li>PID control</li><li>Sockets &amp; HTTP</li><li>pthreads</li><li>Linux &amp; systemd</li>
-						</ul>
-					</article>
-					<article class="skill-card ic reveal" data-ref="U7 · TOOLS">
-						<div class="skill-card__icon"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
-						<h3>Frameworks &amp; Tools</h3>
-						<ul class="chips">
-							<li>Node.js &amp; Express</li><li>WebSockets</li><li>SQLite</li><li>Firebase</li><li>YOLOv8 / PyTorch</li><li>Neural nets from scratch</li><li>Metabase</li><li>Docker</li><li>Git &amp; GitHub</li>
-						</ul>
-					</article>
-				</div>
-			</div>
-		</section>
-
-		<!-- Projects -->
-		<section class="section" id="projects">
-			<div class="container">
-				<div class="section__head reveal">
-					<p class="section__kicker"><span class="kicker-ref">J3</span> Projects</p>
-					<h2 class="section__title">Featured work</h2>
-				</div>
-
-				<div class="featured">
-					<article class="feature module reveal" data-ref="U2 · PML-LIVE">
-						<a class="feature__media feature__media--photo feature__media--screen" href="projects/pet-monitor-live.html" tabindex="-1" aria-hidden="true">
-							<img src="images/projects/pet-monitor-live/live-dashboard.jpg" alt="" loading="lazy" width="1440" height="900" />
-						</a>
-						<div class="feature__body">
-							<p class="feature__num">01 · IoT &amp; real-time · <span class="feature__live">Live demo</span></p>
-							<h3>Pet Monitor Live</h3>
-							<p>The software my Raspberry Pi capstone was missing: calibration from raw sensor values to grams and pH, visit detection, alerts that don't false-alarm, history storage, and a live WebSocket dashboard. A demo mode runs right in the browser.</p>
-							<ul class="tags"><li>Node.js</li><li>WebSockets</li><li>SQLite</li><li>Python</li><li>52 tests</li></ul>
-							<div class="feature__links">
-								<a class="link-arrow" href="projects/pet-monitor-live.html">Case study &amp; demo <i class="fas fa-arrow-right"></i></a>
-								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/pet-monitor-live" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
-							</div>
+				<ul class="projects">
+					<li class="proj">
+						<div class="proj__thumb"><img src="images/projects/tabletop-workspace/battle-map.jpg" alt="Tabletop Campaign Workspace: combat tracker, battle map and game log" width="1440" height="900" loading="lazy" style="object-position:center" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/tabletop-workspace.html">Tabletop Campaign Workspace<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i><span class="badge">Live demo</span></a></h3>
+							<p class="proj__desc">Rules, sheets, initiative, a map and dice spread across the game master's laptop and every player's phone <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> one real-time workspace with Firebase three-way-merge sync, a rules engine and an open-content data pipeline. 4,735 automated checks.</p>
+							<ul class="tags" aria-label="Technologies"><li>JavaScript</li><li>Firebase</li><li>Real-time sync</li><li>Data pipeline</li></ul>
 						</div>
-					</article>
-
-					<article class="feature feature--reverse module reveal" data-ref="U3 · MINIC-CC">
-						<a class="feature__media feature__media--photo feature__media--screen" href="projects/minic-compiler.html" tabindex="-1" aria-hidden="true">
-							<img src="images/projects/minic-compiler/compiler-asm.jpg" alt="" loading="lazy" width="1440" height="900" />
-						</a>
-						<div class="feature__body">
-							<p class="feature__num">02 · Compilers · <span class="feature__live">Live demo</span></p>
-							<h3>Mini-C Compiler → my MIPS CPU</h3>
-							<p>A compiler for a small C-like language with a lexer, precedence-climbing parser, optimiser and MIPS code generator. Its output runs on my own MIPS emulator, so you can type C in the browser and step through the instructions it becomes.</p>
-							<ul class="tags"><li>Compilers</li><li>MIPS</li><li>JavaScript</li><li>91 tests</li></ul>
-							<div class="feature__links">
-								<a class="link-arrow" href="projects/minic-compiler.html">Case study &amp; demo <i class="fas fa-arrow-right"></i></a>
-								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/minic-compiler" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
-							</div>
+					</li>
+					<li class="proj">
+						<div class="proj__thumb"><img src="images/projects/pet-monitor-live/live-dashboard.jpg" alt="Pet Monitor Live dashboard" width="1440" height="900" loading="lazy" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/pet-monitor-live.html">Pet Monitor Live<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i><span class="badge">Live demo</span></a></h3>
+							<p class="proj__desc">My capstone's app only showed raw, latest-only readings <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> a validated ingest API with calibration to real units, visit detection, alerts, SQLite history and a live WebSocket dashboard. 52 tests.</p>
+							<ul class="tags" aria-label="Technologies"><li>Node.js</li><li>WebSockets</li><li>SQLite</li><li>Python</li></ul>
 						</div>
-					</article>
-
-					<article class="feature module reveal" data-ref="U4 · NN-MNIST">
-						<a class="feature__media feature__media--photo feature__media--screen" href="projects/digit-recognizer.html" tabindex="-1" aria-hidden="true">
-							<img src="images/projects/digit-recognizer/demo-sample.jpg" alt="" loading="lazy" width="1440" height="900" />
-						</a>
-						<div class="feature__body">
-							<p class="feature__num">03 · Machine learning · <span class="feature__live">Live demo</span></p>
-							<h3>Neural Network from Scratch</h3>
-							<p>No ML libraries: I wrote the matrix maths, backpropagation and the Adam optimiser myself, all gradient-checked. Trained on MNIST to <strong>98.86% accuracy</strong> and shrunk to a 232 KB model, so you can draw a digit and watch the neurons light up.</p>
-							<ul class="tags"><li>JavaScript</li><li>Backprop</li><li>AdamW</li><li>43 tests</li></ul>
-							<div class="feature__links">
-								<a class="link-arrow" href="projects/digit-recognizer.html">Case study &amp; demo <i class="fas fa-arrow-right"></i></a>
-								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/neural-net-from-scratch" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
-							</div>
+					</li>
+					<li class="proj">
+						<div class="proj__thumb"><img src="images/projects/myousik-fullstack/home.jpg" alt="Myousik 2.0 home page" width="1440" height="900" loading="lazy" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/music-website.html">Myousik 2.0: Full-Stack Music App<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i></a></h3>
+							<p class="proj__desc">Our team's music site looked like an app but saved nothing <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> a REST API on SQLite with hashed-password sessions, song CRUD and reorderable playlists. 37 API tests, 1 runtime dependency.</p>
+							<ul class="tags" aria-label="Technologies"><li>Express</li><li>SQLite</li><li>REST API</li></ul>
 						</div>
-					</article>
-
-					<article class="feature feature--reverse module reveal" data-ref="U5 · TINYHTTPD">
-						<a class="feature__media feature__media--photo feature__media--screen" href="projects/c-http-server.html" tabindex="-1" aria-hidden="true">
-							<img src="images/projects/c-http-server/bench-chart.jpg" alt="" loading="lazy" width="1440" height="780" style="object-fit:contain;background:#07110c" />
-						</a>
-						<div class="feature__body">
-							<p class="feature__num">04 · Systems programming</p>
-							<h3>tinyhttpd: HTTP Server in C</h3>
-							<p>A multithreaded HTTP/1.1 server written from scratch in C, with a bounded work queue and back-pressure, keep-alive and pipelining, and path-traversal defences. I benchmarked it with my own load tester: <strong>~9,900 requests/s</strong> and 0 errors across about a million requests.</p>
-							<ul class="tags"><li>C11</li><li>pthreads</li><li>Sockets</li><li>184 tests</li></ul>
-							<div class="feature__links">
-								<a class="link-arrow" href="projects/c-http-server.html">Read the case study <i class="fas fa-arrow-right"></i></a>
-								<a class="link-arrow link-arrow--muted" href="https://github.com/Aaron367123/PortfolioProjects/tree/main/c-http-server" target="_blank" rel="noopener"><i class="fab fa-github"></i> Code</a>
-							</div>
+					</li>
+					<li class="proj">
+						<div class="proj__thumb proj__thumb--contain"><img src="images/projects/c-http-server/bench-chart.jpg" alt="tinyhttpd benchmark chart of requests per second against worker threads" width="1440" height="780" loading="lazy" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/c-http-server.html">tinyhttpd: HTTP Server in C<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i></a></h3>
+							<p class="proj__desc">I wanted to learn what sits underneath every web server <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> a multithreaded HTTP/1.1 server in C: about 9,900 requests/s with 0 errors across about a million requests. 184 tests.</p>
+							<ul class="tags" aria-label="Technologies"><li>C11</li><li>pthreads</li><li>Sockets</li></ul>
 						</div>
-					</article>
-				</div>
-
-				<div class="section__head section__head--sub more-head reveal">
-					<h2 class="section__title section__title--sm">More projects</h2>
-					<div class="dip" role="group" aria-label="Filter projects by area">
-						<span class="dip__label">SW1 · Filter</span>
-						<button type="button" class="dip__switch is-on" data-filter="all" aria-pressed="true"><span class="dip__lever"></span>All</button>
-						<button type="button" class="dip__switch" data-filter="hw" aria-pressed="false"><span class="dip__lever"></span>Hardware</button>
-						<button type="button" class="dip__switch" data-filter="sys" aria-pressed="false"><span class="dip__lever"></span>Systems</button>
-						<button type="button" class="dip__switch" data-filter="web" aria-pressed="false"><span class="dip__lever"></span>Web</button>
-					</div>
-				</div>
-
-				<div class="cards">
-					<a class="card ic reveal" data-ref="U12 · TABLETOP" data-cat="web" href="projects/tabletop-workspace.html">
-						<div class="card__media"><img src="images/projects/tabletop-workspace/battle-map.jpg" alt="Tabletop Campaign Workspace: combat tracker, battle map and game log" loading="lazy" width="1440" height="900" style="object-position:center" /></div>
-						<div class="card__body">
-							<h3>Tabletop Campaign Workspace <span class="card__live">Live</span></h3>
-							<p>A real-time workspace for running tabletop games, synced between the game master's screen and players' phones. Firebase sync with three-way merging, a rules engine, and an open-content data pipeline.</p>
-							<ul class="tags"><li>Real-time sync</li><li>JavaScript</li><li>4,735 checks</li></ul>
-							<span class="card__more">Case study &amp; demo <i class="fas fa-arrow-right"></i></span>
+					</li>
+					<li class="proj">
+						<div class="proj__thumb"><img src="images/projects/digit-recognizer/demo-sample.jpg" alt="Neural network digit recognizer demo" width="1440" height="900" loading="lazy" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/digit-recognizer.html">Neural Network from Scratch<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i><span class="badge">Live demo</span></a></h3>
+							<p class="proj__desc">ML libraries hide the maths <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> matrix ops, backpropagation and AdamW written by hand in plain JavaScript: 98.86% test accuracy in a 232 KB model. 43 tests, including gradient checks.</p>
+							<ul class="tags" aria-label="Technologies"><li>JavaScript</li><li>Backprop</li><li>AdamW</li></ul>
 						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U6 · LOGIC-SIM" data-cat="hw sys" href="projects/logic-sim.html">
-						<div class="card__media"><img src="images/projects/logic-sim/counter-running.jpg" alt="Logic simulator running a 4-bit counter" loading="lazy" width="1440" height="900" style="object-position:center" /></div>
-						<div class="card__body">
-							<h3>Digital Logic Simulator <span class="card__live">Live</span></h3>
-							<p>Drag gates onto a board, wire them up and watch signals propagate. An event-driven simulator with gate delays, 0/1/X logic, reusable chips, truth tables and timing diagrams.</p>
-							<ul class="tags"><li>Digital logic</li><li>JavaScript</li><li>SVG</li></ul>
-							<span class="card__more">Case study &amp; demo <i class="fas fa-arrow-right"></i></span>
+					</li>
+					<li class="proj">
+						<div class="proj__thumb"><img src="images/projects/minic-compiler/compiler-asm.jpg" alt="Mini-C compiler demo with generated MIPS assembly" width="1440" height="900" loading="lazy" /></div>
+						<div class="proj__body">
+							<h3 class="proj__title"><a class="proj__link" href="projects/minic-compiler.html">Mini-C Compiler → my MIPS CPU<i class="fas fa-arrow-right proj__arrow" aria-hidden="true"></i><span class="badge">Live demo</span></a></h3>
+							<p class="proj__desc">I wanted to see how high-level code becomes assembly <span class="to" aria-hidden="true">→</span><span class="sr-only">Result:</span> a lexer, parser, optimiser and MIPS code generator whose output runs on my own emulator. Optimised code executes 11.7% fewer instructions. 91 tests.</p>
+							<ul class="tags" aria-label="Technologies"><li>Compilers</li><li>MIPS</li><li>JavaScript</li></ul>
 						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U7 · PID-LAB" data-cat="hw" href="projects/pid-lab.html">
-						<div class="card__media"><img src="images/projects/pid-lab/lab-drone.jpg" alt="PID control lab tuning a drone's altitude" loading="lazy" width="1440" height="900" style="object-position:left top" /></div>
-						<div class="card__body">
-							<h3>PID Control Lab <span class="card__live">Live</span></h3>
-							<p>Tune PID controllers live against five simulated physical systems, with relay autotuning. Includes an embedded C library verified against the simulation to within 0.0001.</p>
-							<ul class="tags"><li>Control</li><li>C99</li><li>RK4</li></ul>
-							<span class="card__more">Case study &amp; demo <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U8 · MIPS-EMU" data-cat="sys hw" href="projects/mips-simulator.html">
-						<div class="card__media"><img src="images/projects/mips-emulator/mips-finished.jpg" alt="MIPS emulator after running a program" loading="lazy" width="1440" height="900" style="object-position:left top" /></div>
-						<div class="card__body">
-							<h3>MIPS Emulator <span class="card__live">Live</span></h3>
-							<p>A two-pass assembler and step-through CPU with 50+ instructions, grown from my C lab series. It's also the target for my compiler.</p>
-							<ul class="tags"><li>Architecture</li><li>JavaScript</li><li>61 tests</li></ul>
-							<span class="card__more">Case study &amp; demo <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U9 · MYOUSIK" data-cat="web" href="projects/music-website.html">
-						<div class="card__media"><img src="images/projects/myousik-fullstack/home.jpg" alt="Myousik 2.0 home page" loading="lazy" width="1440" height="900" /></div>
-						<div class="card__body">
-							<h3>Myousik 2.0: Full-Stack Music App</h3>
-							<p>A static team mockup rebuilt as a real app: REST API, SQLite, hashed-password sessions, a searchable library and reorderable playlists.</p>
-							<ul class="tags"><li>Express</li><li>SQLite</li><li>37 tests</li></ul>
-							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-					<a class="card ic reveal" data-ref="U11 · PET-MON" data-cat="hw" href="projects/pet-monitor.html">
-						<div class="card__media"><img src="images/projects/pet-monitor/prototype.jpg" alt="Smart Pet Monitor hardware prototype" loading="lazy" width="1600" height="1475" /></div>
-						<div class="card__body">
-							<h3>Smart Pet Monitor (Capstone)</h3>
-							<p>A Raspberry Pi with four sensors on a custom PCB, reporting to Firebase and an Android app. I built the presence-detection sensor.</p>
-							<ul class="tags"><li>Raspberry Pi</li><li>I²C</li><li>KiCad</li></ul>
-							<span class="card__more">Read the case study <i class="fas fa-arrow-right"></i></span>
-						</div>
-						<span class="card__arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-					</a>
-				</div>
-				<div class="earlier reveal">
-					<p class="earlier__title"><span class="kicker-ref">J5</span> Earlier work &amp; coursework</p>
-					<ul class="earlier__list">
-						<li><a href="projects/yolo-parking.html"><span class="earlier__name">Parking Detection with YOLOv8</span><span class="earlier__desc">Object detection on aerial lot photos · 89.4% mAP@50</span><span class="earlier__tags">Python · YOLOv8</span></a></li>
-						<li><a href="projects/cmd-server.html"><span class="earlier__name">Multithreaded TCP Command Server</span><span class="earlier__desc">Telnet command server with a thread pool, run as a systemd service</span><span class="earlier__tags">Java · Linux</span></a></li>
-						<li><a href="projects/nba-data.html"><span class="earlier__name">NBA Rookie Data Analysis</span><span class="earlier__desc">35 draft classes analysed with SQL in Metabase</span><span class="earlier__tags">SQL · Metabase</span></a></li>
-						<li><a href="projects/sorting-algorithms.html"><span class="earlier__name">Sorting Algorithms</span><span class="earlier__desc">Four sorts timed in Java, plus a live visualizer</span><span class="earlier__tags">Java · Algorithms</span></a></li>
-					</ul>
-				</div>
-			</div>
-		</section>
+					</li>
+				</ul>
 
-		<!-- Contact -->
-		<section class="section section--alt" id="contact">
-			<div class="container">
-				<div class="contact reveal">
-					<p class="section__kicker"><span class="kicker-ref">J4</span> Contact</p>
-					<h2 class="section__title">Let's build something together.</h2>
-					<p class="contact__lead">I'm currently looking for new roles and interesting projects. Whether you have a question or just want to say hi, my inbox is open.</p>
-					<a href="mailto:aaronjara367@gmail.com" class="btn btn--primary btn--lg"><i class="fas fa-paper-plane" aria-hidden="true"></i> Say hello</a>
+				<h3 class="subhead">Earlier work</h3>
+				<ul class="earlier">
+					<li><a href="projects/logic-sim.html"><span class="earlier__name">Digital Logic Simulator<span class="earlier__live">· Live</span></span><span class="earlier__tags">JavaScript · SVG</span><span class="earlier__desc">Event-driven simulator with gate delays, 0/1/X logic and reusable chips · 67 tests</span></a></li>
+					<li><a href="projects/pid-lab.html"><span class="earlier__name">PID Control Lab<span class="earlier__live">· Live</span></span><span class="earlier__tags">C99 · JavaScript</span><span class="earlier__desc">Tune PID controllers against five simulated systems, with relay autotuning</span></a></li>
+					<li><a href="projects/mips-simulator.html"><span class="earlier__name">MIPS Emulator<span class="earlier__live">· Live</span></span><span class="earlier__tags">JavaScript</span><span class="earlier__desc">Two-pass assembler and step-through CPU with 50+ instructions · 61 tests</span></a></li>
+					<li><a href="projects/pet-monitor.html"><span class="earlier__name">Smart Pet Monitor (Capstone)</span><span class="earlier__tags">Raspberry Pi · I²C</span><span class="earlier__desc">Four-sensor Raspberry Pi device on a custom PCB; I built the presence sensor</span></a></li>
+					<li><a href="projects/yolo-parking.html"><span class="earlier__name">Parking Detection with YOLOv8</span><span class="earlier__tags">Python · YOLOv8</span><span class="earlier__desc">Object detection on aerial lot photos · 89.4% mAP@50</span></a></li>
+					<li><a href="projects/cmd-server.html"><span class="earlier__name">Multithreaded TCP Command Server</span><span class="earlier__tags">Java · Linux</span><span class="earlier__desc">Telnet command server with a thread pool, run as a systemd service</span></a></li>
+					<li><a href="projects/nba-data.html"><span class="earlier__name">NBA Rookie Data Analysis</span><span class="earlier__tags">SQL · Metabase</span><span class="earlier__desc">35 draft classes analysed with SQL in Metabase</span></a></li>
+					<li><a href="projects/sorting-algorithms.html"><span class="earlier__name">Sorting Algorithms</span><span class="earlier__tags">Java</span><span class="earlier__desc">Four sorts timed in Java, plus a live visualizer</span></a></li>
+				</ul>
+			</section>
 
-					<div class="contact__grid">
-						<a class="contact-item" href="mailto:aaronjara367@gmail.com">
-							<i class="fas fa-envelope" aria-hidden="true"></i>
-							<span><small>Email</small>aaronjara367@gmail.com</span>
-						</a>
-						<a class="contact-item" href="tel:+16478650408">
-							<i class="fas fa-phone" aria-hidden="true"></i>
-							<span><small>Phone</small>(647) 865-0408</span>
-						</a>
-						<a class="contact-item" href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener">
-							<i class="fab fa-linkedin-in" aria-hidden="true"></i>
-							<span><small>LinkedIn</small>in/aaron-morris-jara</span>
-						</a>
-						<a class="contact-item" href="https://github.com/Aaron367123" target="_blank" rel="noopener">
-							<i class="fab fa-github" aria-hidden="true"></i>
-							<span><small>GitHub</small>Aaron367123</span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</section>
+			<section class="section" id="contact" aria-labelledby="contact-h">
+				<h2 class="section__label" id="contact-h"><span>04</span> Contact</h2>
+				<p class="contact__title">Let's build something together.</p>
+				<p>I'm currently looking for new roles and interesting projects. Whether you have a question or just want to say hi, my inbox is open.</p>
+				<a class="btn btn--solid" href="mailto:aaronjara367@gmail.com" style="margin-top:8px"><i class="fas fa-paper-plane" aria-hidden="true"></i> Say hello</a>
+				<ul class="contact__list">
+					<li><a href="mailto:aaronjara367@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i><span><small>Email</small><b>aaronjara367@gmail.com</b></span></a></li>
+					<li><a href="tel:+16478650408"><i class="fas fa-phone" aria-hidden="true"></i><span><small>Phone</small><b>(647) 865-0408</b></span></a></li>
+					<li><a href="https://www.linkedin.com/in/aaron-morris-jara/" target="_blank" rel="noopener"><i class="fab fa-linkedin-in" aria-hidden="true"></i><span><small>LinkedIn</small><b>in/aaron-morris-jara</b></span></a></li>
+					<li><a href="https://github.com/Aaron367123" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i><span><small>GitHub</small><b>Aaron367123</b></span></a></li>
+				</ul>
+				<p class="foot">&copy; 2026 Aaron Morris Jara</p>
+			</section>
 
-	</main>
+		</main>
+	</div>
 
-	<footer class="footer">
-		<div class="container footer__inner">
-			<p class="footer__silk"><span class="led" aria-hidden="true"></span> AJ-PORTFOLIO · REV 3.0 · DESIGNED &amp; ASSEMBLED BY AARON M. JARA</p>
-			<p>&copy; <span id="year">2026</span> Aaron Morris Jara</p>
-			<a href="#top" class="footer__top">Back to top <i class="fas fa-arrow-up" aria-hidden="true"></i></a>
-		</div>
-	</footer>
 
-	<script src="assets/js/site.js"></script>
+	<script>
+	(function () {
+		var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+		var desktop = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
+
+		/* Cursor-follow spotlight: desktop pointer only, off for reduced motion */
+		var spot = document.querySelector('.spotlight');
+		var px = 0, py = 0, frame = 0, bound = false;
+		function onMove(e) {
+			px = e.clientX; py = e.clientY;
+			if (frame) return;
+			frame = requestAnimationFrame(function () {
+				frame = 0;
+				spot.style.setProperty('--x', px + 'px');
+				spot.style.setProperty('--y', py + 'px');
+				spot.classList.add('is-on');
+			});
+		}
+		function syncSpot() {
+			var want = desktop.matches && !reduce.matches;
+			if (want && !bound) { window.addEventListener('pointermove', onMove, { passive: true }); bound = true; }
+			if (!want && bound) { window.removeEventListener('pointermove', onMove); bound = false; spot.classList.remove('is-on'); }
+		}
+		function listen(mq, fn) { if (mq.addEventListener) mq.addEventListener('change', fn); else if (mq.addListener) mq.addListener(fn); }
+		syncSpot(); listen(reduce, syncSpot); listen(desktop, syncSpot);
+
+		/* Theme toggle (same localStorage key as the rest of the site) */
+		var root = document.documentElement;
+		var toggles = Array.prototype.slice.call(document.querySelectorAll('[data-theme-toggle]'));
+		function paintToggles() {
+			var light = root.getAttribute('data-theme') === 'light';
+			toggles.forEach(function (b) {
+				b.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+				b.querySelector('i').className = 'fas ' + (light ? 'fa-moon' : 'fa-sun');
+			});
+		}
+		toggles.forEach(function (b) {
+			b.addEventListener('click', function () {
+				var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+				root.setAttribute('data-theme', next);
+				try { localStorage.setItem('theme', next); } catch (e) {}
+				paintToggles();
+			});
+		});
+		paintToggles();
+
+		/* Active section in both navs */
+		var links = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+		var ids = ['about', 'experience', 'projects', 'contact'];
+		var sections = ids.map(function (id) { return document.getElementById(id); });
+		var current = null;
+		function setActive(id) {
+			if (id === current) return;
+			current = id;
+			links.forEach(function (a) {
+				var on = a.getAttribute('data-nav') === id;
+				a.classList.toggle('is-active', on);
+				if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+			});
+		}
+		var visible = {};
+		function pick() {
+			// Near the bottom, the last section wins even if it never reaches the trigger line.
+			if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) { setActive('contact'); return; }
+			for (var i = 0; i < ids.length; i++) { if (visible[ids[i]]) { setActive(ids[i]); return; } }
+		}
+		if ('IntersectionObserver' in window) {
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
+				pick();
+			}, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+			sections.forEach(function (s) { io.observe(s); });
+			window.addEventListener('scroll', function () {
+				if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) setActive('contact');
+				else if (current === 'contact' && !visible.contact) pick();
+			}, { passive: true });
+		}
+		setActive(location.hash && ids.indexOf(location.hash.slice(1)) > -1 ? location.hash.slice(1) : 'about');
+	})();
+	</script>
 </body>
 </html>

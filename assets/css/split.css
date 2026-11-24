@@ -1,0 +1,64 @@
+/* =========================================================
+   Split theme layer for the case-study and resume pages.
+   Loaded last, after style.css / case-study.css / board.css: it swaps the
+   circuit-board palette for the homepage's navy + teal and removes the
+   board texture, so every page reads as one site.
+   ========================================================= */
+:root {
+	--bg: #0b1322;
+	--bg-alt: #0e1729;
+	--surface: #111b2e;
+	--surface-2: #16223a;
+	--border: rgba(148, 170, 210, 0.12);
+	--border-strong: rgba(148, 170, 210, 0.24);
+	--text: #dfe7f2;
+	--text-muted: #a9b6cb;
+	--text-faint: #8593aa;
+	--accent: #5eead4;
+	--accent-rgb: 94, 234, 212;
+	--accent-bright: #99f6e4;
+	--accent-2: #5eead4;
+	--led-rgb: 94, 234, 212;
+	--accent-3: #7dd3fc;
+	--on-accent: #0b1322;
+	--gradient: linear-gradient(120deg, #5eead4 0%, #99f6e4 100%);
+	--nav-bg: rgba(11, 19, 34, 0.8);
+	--shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.75);
+	--shadow-glow: 0 10px 40px -14px rgba(var(--accent-rgb), 0.45);
+	--grid-line: rgba(148, 170, 210, 0.05);
+	--trace: rgba(var(--accent-rgb), 0.22);
+	--via: rgba(var(--accent-rgb), 0.3);
+	--font-head: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+[data-theme="light"] {
+	--bg: #f6f8fb;
+	--bg-alt: #eef2f7;
+	--surface: #ffffff;
+	--surface-2: #f1f4f9;
+	--border: rgba(15, 23, 42, 0.1);
+	--border-strong: rgba(15, 23, 42, 0.18);
+	--text: #0f172a;
+	--text-muted: #3b4658;
+	--text-faint: #5a6578;
+	--accent: #0f766e;
+	--accent-rgb: 15, 118, 110;
+	--accent-bright: #0d9488;
+	--accent-2: #0f766e;
+	--led-rgb: 15, 118, 110;
+	--accent-3: #0369a1;
+	--on-accent: #ffffff;
+	--gradient: linear-gradient(120deg, #0f766e 0%, #0d9488 100%);
+	--nav-bg: rgba(246, 248, 251, 0.86);
+	--shadow: 0 20px 50px -26px rgba(15, 23, 42, 0.3);
+	--shadow-glow: 0 10px 30px -12px rgba(var(--accent-rgb), 0.35);
+	--grid-line: rgba(15, 23, 42, 0.05);
+}
+
+/* No board texture: a plain surface like the homepage. */
+body,
+[data-theme="light"] body { background-image: none; }
+.blob { opacity: 0.1; }
+[data-theme="light"] .blob { opacity: 0.08; }
+
+/* Headings in Inter, tightened like the homepage. */
+h1, h2, h3, h4 { letter-spacing: -0.02em; }
